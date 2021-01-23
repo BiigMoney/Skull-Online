@@ -7,8 +7,8 @@ export default class Skull extends React.Component {
     config = {
 		type: Phaser.AUTO,
 		parent: "phaser",
-		width: 800,
-		height: 600,
+		width: 1600,
+		height: 900,
 		scene: playGame
 	  };
 	  
