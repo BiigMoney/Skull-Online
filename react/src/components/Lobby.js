@@ -1,12 +1,12 @@
 import React from "react";
 
-export default class Homepage extends React.Component {
+export default class Lobby extends React.Component {
 
 
 	render() {
 		return (
 			<div style={{ textAlign: "center" }}>
-				<h1>This is the homepage</h1>
+				<h1>Lobby Time!</h1>
 			</div>
 		);
 	}
