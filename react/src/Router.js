@@ -6,17 +6,9 @@ import WelcomePage from './components/WelcomePage'
 
 const Router = () =>{
     return (
-        <div className="page-container">
-        <div className="content-wrap">
         <BrowserRouter>
         <Route path="/" component={App}/>
-        <Switch>
-        <Route exact path="/" component={WelcomePage}/>
-        <Route path="/lobby" component={Lobby}/>
-        </Switch>
         </BrowserRouter>
-        </div>
-        </div>
     )
 }
 
