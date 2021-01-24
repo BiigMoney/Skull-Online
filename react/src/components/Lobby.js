@@ -19,7 +19,6 @@ export default class Lobby extends React.Component {
         })
 
         axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/rooms").then( res =>{
-            console.log(res)
             this.setState({
                 lobbies: res.data
             })
@@ -35,7 +34,6 @@ export default class Lobby extends React.Component {
         })
 
         axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/players").then( res =>{
-            console.log(res)
             this.setState({
                 players: res.data
             })
@@ -63,16 +61,27 @@ export default class Lobby extends React.Component {
         }
     }
 
-    submitLobby() {
-        let lobbyName = document.getElementById("lobbyName")
+    submitLobby = () => {
+        let lobbyName = document.getElementById("lobbyName").value
+        let player = {
+            name: this.state.name, 
+            lobby: lobbyName
+        }
         let lobby = {
             name: lobbyName,
             hasPassword: document.getElementById("theCheck").checked,
             password: document.getElementById("lobbyPassword").value,
-            players: [{name: this.state.name, lobby: lobbyName}]
+            players: [player]
         }
-        axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/room").then( res =>{
-
+        axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/room", lobby).then( res =>{
+            console.log(res)
+            axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/player", {name: this.state.name, room: res.data.room.id}).then( res =>{
+                console.log("the second res: " + res)
+                this.props.history.push({
+                    pathname: "/play",
+                    state: {isAuthed: true}
+                })
+            })
         })
     }
 
@@ -103,7 +112,7 @@ export default class Lobby extends React.Component {
                                 </label>
                                 <p>Password:</p>
                                 <input autoComplete="off" type="text" id="lobbyPassword" placeholder="name..." disabled/>
-                                <button onClick={this.submitLobby}></button>
+                                <button onClick={this.submitLobby}>Create Lobby</button>
                             </form>
                         </div>
                     ) : (
