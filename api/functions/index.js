@@ -113,6 +113,23 @@ app.post('/room',(req,res) =>{
         password: req.body.password
     }
 
+    let errors = []
+
+    if(isEmpty(newRoom.name)){
+        errors.push("Name cannot be empty.")
+    }
+    if(newRoom.name.length > 20){
+        errors.push("Name cannot be longer than 20 characters")
+    }
+    if(newRoom.hasPassword && isEmpty(newRoom.password)){
+        errors.push("Password cannot be empty.")
+    }
+    if(newRoom.hasPassword && newRoom.password.length > 20){
+        errors.push("Password cannot be longer than 20 characters.")
+    }
+    if(errors.length > 0){
+        return res.status(400).json({errors: errors})
+    }
     admin.firestore().collection('rooms').add(newRoom).then((doc) =>{
         newRoom.id = doc.id
         return res.json({ room: newRoom})
@@ -137,5 +154,9 @@ app.delete("/delroom/:id",(req,res) =>{
         res.status(500).json({error: "Something went wrong"})
     })
 })
+
+function isEmpty(string){
+    return (!string || 0 === string.length);
+}
 
 exports.api = functions.https.onRequest(app)
