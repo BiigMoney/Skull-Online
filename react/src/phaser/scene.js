@@ -45,8 +45,28 @@ class playGame extends Phaser.Scene {
     this.load.image("backdrop", src/assets/cards/backdrop.png); */
   }
   create() {
-    this.Card = this.add.image(300,300, 'redCardback').setScale(0.2, 0.2).setInteractive();
-    this.input.setDraggable(this.Card);
+    let self = this;
+
+    this.dealText = this.add.text(75, 350, ['DEAL CARDS']).setFontSize(18).setFontFamily('Trebuchet MS').setColor('#00ffff').setInteractive();
+
+    this.dealCards = () => {
+      for (let i = 0; i < 4; i++) {
+        let playerCard = new Card(this);
+        playerCard.render(475 + (i * 100), 650, 'redCardback');
+      }
+    }
+
+    this.dealText.on('pointerdown', function () {
+        self.dealCards();
+    })
+
+    this.dealText.on('pointerover', function () {
+        self.dealText.setColor('#ff69b4');
+    })
+
+    this.dealText.on('pointerout', function () {
+        self.dealText.setColor('#00ffff');
+    })
 
     this.input.on('drag', function (pointer, gameObject, dragX, dragY){
       gameObject.x = dragX;
