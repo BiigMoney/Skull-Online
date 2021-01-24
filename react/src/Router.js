@@ -8,6 +8,10 @@ const Router = () =>{
     return (
         <BrowserRouter>
         <Route path="/" component={App}/>
+        <Switch>
+            <Route path='/' component={WelcomePage} exact/>
+            <Route path='/lobby' component={Lobby}/>
+        </Switch>
         </BrowserRouter>
     )
 }
