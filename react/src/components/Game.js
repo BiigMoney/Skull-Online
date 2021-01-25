@@ -4,20 +4,26 @@ import Skull from "./Skull"
 export default class Game extends React.Component {
 
     state = {
-        isAuthed: false
+        isAuthed: false,
+        player: null
     }
 
     componentDidMount(){
-        if(this.props.location.state){
-            if(this.props.location.state.isAuthed){
-                this.setState({
-                    isAuthed: true
-                })
-                const {location,history} = this.props;
-                history.replace()
-                return
-            }
+        console.log("made it to game")
+
+
+        const { state } = this.props.location;
+        if (state && state.isAuthed) {
+            this.setState({
+                isAuthed: true,
+                player: state.player
+            })
+            this.props.history.replace({
+                state: {}
+            })
+            return
         }
+
         this.props.history.push("/lobby")
 
     }
@@ -27,7 +33,7 @@ export default class Game extends React.Component {
 			{this.state.isAuthed ? (
                 <div>
                     <h1>User is authed</h1>
-                    <Skull/>
+                    <Skull player={this.state.player}/>
                 </div>
                 ) : <h1>User is not authed</h1>}
 			</div>
