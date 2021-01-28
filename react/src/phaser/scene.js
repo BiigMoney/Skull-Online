@@ -8,43 +8,43 @@ class playGame extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('redCardback', 'src/assets/cards/redCardback.png');
-    /*this.load.image("redFlower", src/assets/cards/redFlower.png);
-    this.load.image("redSkull", src/assets/cards/redSkull.png);
-    this.load.image("redCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("redCoaster1", src/assets/cards/redCoaster1.png);
+    this.load.image('blueBase', 'src/assets/Blue/Base.png');
+    /*this.load.image('blueBaseW', 'src/assets/Blue/BaseW.png');
+    this.load.image('blueDisc', 'src/assets/Blue/Disc.png');
+    this.load.image('blueFlower', 'src/assets/Blue/Flower.png');
+    this.load.image('blueSkull', 'src/assets/Blue/Skull.png');
+
+    this.load.image('greenBase', 'src/assets/Green/Base.png');
+    this.load.image('greenBaseW', 'src/assets/Green/BaseW.png');
+    this.load.image('greenDisc', 'src/assets/Green/Disc.png');
+    this.load.image('greenFlower', 'src/assets/Green/Flower.png');
+    this.load.image('greenSkull', 'src/assets/Green/Skull.png');
+
+    this.load.image('pinkBase', 'src/assets/Pink/Base.png');
+    this.load.image('pinkBaseW', 'src/assets/Pink/BaseW.png');
+    this.load.image('pinkDisc', 'src/assets/Pink/Disc.png');
+    this.load.image('pinkFlower', 'src/assets/Pink/Flower.png');
+    this.load.image('pinkSkull', 'src/assets/Pink/Skull.png');
+
+    this.load.image('purpleBase', 'src/assets/Purple/Base.png');
+    this.load.image('purpleBaseW', 'src/assets/Purple/BaseW.png');
+    this.load.image('purpleDisc', 'src/assets/Purple/Disc.png');
+    this.load.image('purpleFlower', 'src/assets/Purple/Flower.png');
+    this.load.image('purpleSkull', 'src/assets/Purple/Skull.png');
       
-    this.load.image('blueCardback', 'src/assets/cards/redCardback.png');
-    this.load.image("blueFlower", src/assets/cards/redFlower.png);
-    this.load.image("blueSkull", src/assets/cards/redSkull.png);
-    this.load.image("blueCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("blueCoaster1", src/assets/cards/redCoaster1.png);
+    this.load.image('redBase', 'src/assets/Red/Base.png');
+    this.load.image('redBaseW', 'src/assets/Red/BaseW.png');
+    this.load.image('redDisc', 'src/assets/Red/Disc.png');
+    this.load.image('redFlower', 'src/assets/Red/Flower.png');
+    this.load.image('redSkull', 'src/assets/Red/Skull.png');
       
-    this.load.image('greenCardback', 'src/assets/cards/redCardback.png');
-    this.load.image("greenFlower", src/assets/cards/redFlower.png);
-    this.load.image("greenSkull", src/assets/cards/redSkull.png);
-    this.load.image("greenCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("greenCoaster1", src/assets/cards/redCoaster1.png);
-  
-    this.load.image('pinkCardback', 'src/assets/cards/redCardback.png');
-    this.load.image("pinkFlower", src/assets/cards/redFlower.png);
-    this.load.image("pinkSkull", src/assets/cards/redSkull.png);
-    this.load.image("pinkCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("pinkCoaster1", src/assets/cards/redCoaster1.png);
+    this.load.image('yellowBase', 'src/assets/Yellow/Base.png');
+    this.load.image('yellowBaseW', 'src/assets/Yellow/BaseW.png');
+    this.load.image('yellowDisc', 'src/assets/Yellow/Disc.png');
+    this.load.image('yellowFlower', 'src/assets/Yellow/Flower.png');
+    this.load.image('yellowSkull', 'src/assets/Yellow/Skull.png');
       
-    this.load.image('purpleCardback', 'src/assets/cards/redCardback.png');
-    this.load.image("purpleFlower", src/assets/cards/redFlower.png);
-    this.load.image("purpleSkull", src/assets/cards/redSkull.png);
-    this.load.image("purpleCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("purpleCoaster1", src/assets/cards/redCoaster1.png);
-      
-    this.load.image('yellowCardback', 'src/assets/cards/redCardback.png');
-    this.load.image("yellowFlower", src/assets/cards/redFlower.png);
-    this.load.image("yellowSkull", src/assets/cards/redSkull.png);
-    this.load.image("yellowCoaster0", src/assets/cards/redCoaster0.png);
-    this.load.image("yellowCoaster1", src/assets/cards/redCoaster1.png);
-      
-    this.load.image("backdrop", src/assets/cards/backdrop.png); */
+    this.load.image("backdrop", 'src/assets/backdrop.png'); */
   }
 
   create() {
@@ -57,10 +57,11 @@ class playGame extends Phaser.Scene {
     this.outline = this.zone.renderOutline(this.dropZone);
 
     //will need to be done for each color
+    //actually probably get rid of the button and just spawn them
     this.dealCards = () => {
       for (let i = 0; i < 4; i++) {
         let playerCard = new Card(this);
-        playerCard.render(475 + (i * 100), 650, 'redCardback');
+        playerCard.render(475 + (i * 100), 650, 'blueBase');
       }
     }
 
@@ -82,7 +83,7 @@ class playGame extends Phaser.Scene {
     })
 
     this.input.on('dragstart', function (pointer, gameObject) {
-      gameObject.setTint(0xff69b4);
+      //gameObject.setTint(0xff69b4);
       self.children.bringToTop(gameObject);
     })
 
