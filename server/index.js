@@ -4,6 +4,7 @@ const http = require('http')
 const axios = require('axios')
 
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./users.js')
+const { createNewGame, removeGame, getGame, addUserToGame } = require('./game.js')
 
 const PORT = process.env.PORT || 8000
 
@@ -26,9 +27,19 @@ io.on('connection', socket =>{
             console.log(error)
             return
         }
-
         socket.join(user.room)
+        const game
+        if(users.length === 1){
+            game = createNewGame(user)
+        }
+        else{
+            game = addUserToGame(user)
+        }
+        socket.emit("initgame", game)
+        io.to(user.room).broadcast().emit("userjoined", user)
     })
+
+
 
     socket.on('disconnect', () =>{
         console.log("Disconnection")
@@ -46,6 +57,7 @@ io.on('connection', socket =>{
                     socket.broadcast.emit("dc")
                 }
                 if(res.data.players.length === 0){
+                    removeGame(user.room)
                     axios.delete(`http://localhost:5000/skull-online-313fe/us-central1/api/delroom/${user.room}`).then(() => {
                         console.log("room is empty, deleted room")
                     })

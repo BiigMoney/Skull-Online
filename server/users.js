@@ -1,7 +1,7 @@
 const users = []
 
 const addUser = ({id, player, room, host, name}) => {
-    const existingUser = users.find(user => user.room === room && user.player === player)
+    const existingUser = users.find(user => user.room === room && user.name === name)
     if(existingUser){
         return {error: "Player is already connected"}
     }
