@@ -5,6 +5,7 @@ var cors = require("cors")
 admin.initializeApp()
 
 const express = require('express');
+const firebase = require("firebase");
 const app = express();
 app.use(cors())
 
@@ -69,6 +70,25 @@ app.delete('/delplayer/:id',(req,res) =>{
     }).catch(err =>{
         console.error(err)
         res.status(500).json({error: "Something went wrong"})
+    })
+})
+
+app.put('/addplayertoroom/:id', (req,res) => {
+    admin.firestore().collection('rooms').doc(req.params.id).update({
+        players: admin.firestore.FieldValue.arrayUnion(req.body.player)
+    })
+    return res.json({success: "success"})
+})
+
+app.put('/removeplayerfromroom/:id', (req,res) => {
+    console.log("removing")
+    console.log(req.body)
+    admin.firestore().collection('rooms').doc(req.params.id).update({
+        players: admin.firestore.FieldValue.arrayRemove(req.body)
+    }).then(() =>{
+        admin.firestore().collection('rooms').doc(req.params.id).get().then(doc => {
+            return res.json({players: doc.data().players})
+        })
     })
 })
 

@@ -10,9 +10,9 @@ const Router = () =>{
         <BrowserRouter>
         <Route path="/" component={App}/>
         <Switch>
-            <Route path='/' component={WelcomePage} exact/>
-            <Route path='/lobby' component={Lobby}/>
-            <Route path='/play' component={Game}/>
+        <Route path='/' component={WelcomePage} exact/>
+        <Route path='/lobby' component={Lobby}/>
+        <Route path='/play' component={Game}/>
         </Switch>
         </BrowserRouter>
     )
