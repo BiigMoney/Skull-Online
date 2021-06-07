@@ -4,6 +4,7 @@ import App from './components/App'
 import Lobby from './components/Lobby'
 import WelcomePage from './components/WelcomePage'
 import Game from './components/Game'
+import "../bootstrap.css"
 
 const Router = () =>{
     return (

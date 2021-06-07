@@ -149,7 +149,7 @@ export default class Lobby extends React.Component {
                 <div>
                     <h4>Welcome {this.state.name}</h4>
                     <h4>There are currently {this.state.players.length} people playing.</h4>
-                    <button onClick={this.getthedata}>Refresh</button>
+                    <button className="btn btn-primary" onClick={this.getthedata}>Refresh</button>
                     
                     {this.state.scene === 0 ? (
                         <div>
