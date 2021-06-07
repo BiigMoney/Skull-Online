@@ -16,7 +16,7 @@ export default class Skull extends React.Component {
       const config = {
         type: Phaser.AUTO,
         parent: "phaser",
-        width: 1200,
+        width: 1400,
         height: 800,
         scene: playGame
         };
@@ -26,16 +26,10 @@ export default class Skull extends React.Component {
         game: game,
         socket: socket
       })
-      socket.on("dc", () => {
-        console.log(this)
-        socket.disconnect()
-        this.setState({
-          redirect: true
-        })
+      socket.on("error", () => {
+        window.location.reload()
       })
       const {player} = this.props.player
-      console.log(player)
-      socket.emit("join", {player: player.player, room : player.room, name: player.name, host: player.host})
       let bruno = {
         player: player.player,
         room: player.room,
@@ -43,8 +37,7 @@ export default class Skull extends React.Component {
         host: player.host,
         name: player.name
       }
-
-      game.scene.start(playGame, bruno)
+      game.scene.start("game", bruno)
     }
 
     componentWillUnmount(){
@@ -52,15 +45,6 @@ export default class Skull extends React.Component {
       this.state.socket.disconnect()
       window.location.reload()
     }
-    config = {
-		type: Phaser.AUTO,
-		parent: "phaser",
-		width: 1400,
-		height: 800,
-		scene: playGame
-	  };
-	  
-      game = new Phaser.Game(this.config);
     render() {
             return (
                 <div>
