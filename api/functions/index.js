@@ -57,16 +57,39 @@ app.post('/player',(req,res) =>{
     })
 })
 
-app.delete('/delplayer/:id',(req,res) =>{
-    const document = admin.firestore().doc(`/players/${req.params.id}`)
-    admin.firestore().doc(`/players/${req.params.id}`).get().then(doc =>{
+app.post('/delplayer',(req,res) =>{
+    console.log(req.body)
+    admin.firestore().doc(`/players/${req.body.player}`).get().then(doc =>{
         if(!doc.exists){
             return res.status(404).json({error: 'Player not found'})
         } else {
-            document.delete()
+            doc.ref.delete().then(() => {
+                admin.firestore().doc(`/rooms/${req.body.room}`).get().then(doc => {
+                    if(!doc.exists){
+                        return res.status(404).json({error: "Lobby not found"})
+                    }
+                    if(req.body.host){
+                        doc.ref.delete().then(() => {
+                            return res.json({success: "Deleted room and player"})
+                        }).catch(err => {
+                            return res.status(500).json({error: "Error deleting lobby"})
+                        })
+                    } else {
+                        doc.ref.update({
+                            players: admin.firestore.FieldValue.arrayRemove(req.body)
+                        }).then(() => {
+                            return res.json({success: "Deleted player and removed from room"})
+                        }).catch(err => {
+                            console.error(err)
+                            return res.status(500).json({error: "Error updating players array"})
+                        })
+                    }
+                })
+            }).catch(err => {
+                console.error(err)
+                return res.status(500).json({error: "Error deleting player from players collection"})
+            })
         }
-    }).then(() => {
-        return res.json({message: 'Player deleted successfully'})
     }).catch(err =>{
         console.error(err)
         res.status(500).json({error: "Something went wrong"})
