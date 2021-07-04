@@ -2,45 +2,13 @@ const functions = require("firebase-functions");
 const admin = require('firebase-admin')
 var cors = require("cors")
 
+const io = require('socket.io-client')
+
 admin.initializeApp()
 
 const express = require('express');
-const firebase = require("firebase");
 const app = express();
 app.use(cors())
-
-
-app.get('/players',(req,res)=>{
-    admin.firestore().collection('players').get().then((data) => {
-        let players = [];
-        data.forEach((doc) =>{
-            players.push({
-                id: doc.id,
-                name: doc.data().name,
-                room: doc.data().room,
-            })
-        })
-        return res.json(players)
-    }).catch((err) =>{
-        console.error(err)
-    })
-})
-
-app.get('/player/:id', (req,res) =>{
-    let playerData = {};
-    admin.firestore().doc(`/players/${req.params.id}`).get().then(doc =>{
-        if(!doc.exists){
-            return res.status(404).json({error: "Player does not exist"})
-        }
-        playerData = doc.data();
-        playerData.id = doc.id;
-        return res.json(playerData)
-    }).catch((err) =>{
-        console.error(err)
-        return res.status(404).json({error: "Cant find"})
-    })
-})
-
 
 app.post('/player',(req,res) =>{
     let newPlayer = {
@@ -66,7 +34,7 @@ app.post('/delplayer',(req,res) =>{
             doc.ref.delete().then(() => {
                 admin.firestore().doc(`/rooms/${req.body.room}`).get().then(doc => {
                     if(!doc.exists){
-                        return res.status(404).json({error: "Lobby not found"})
+                        return res.json({success: "Player deleted, lobby has already been deleted."})
                     }
                     if(req.body.host){
                         doc.ref.delete().then(() => {
@@ -96,105 +64,35 @@ app.post('/delplayer',(req,res) =>{
     })
 })
 
-app.put('/addplayertoroom/:id', (req,res) => {
-    admin.firestore().collection('rooms').doc(req.params.id).update({
-        players: admin.firestore.FieldValue.arrayUnion(req.body.player)
-    })
-    return res.json({success: "success"})
-})
-
-app.put('/removeplayerfromroom/:id', (req,res) => {
-    console.log("removing")
-    console.log(req.body)
-    admin.firestore().collection('rooms').doc(req.params.id).update({
-        players: admin.firestore.FieldValue.arrayRemove(req.body)
-    }).then(() =>{
-        admin.firestore().collection('rooms').doc(req.params.id).get().then(doc => {
-            return res.json({players: doc.data().players})
-        })
-    })
-})
-
-app.get('/rooms', (req,res) =>{
-    admin.firestore().collection('rooms').get().then((data) => {
-        let rooms = [];
-        data.forEach((doc) =>{
-            rooms.push({
-                id: doc.id,
-                name: doc.data().name,
-                players: doc.data().players,
-                hasPassword: doc.data().hasPassword,
-                password: doc.data().password
-            })
-        })
-        return res.json(rooms)
-    }).catch((err) =>{
-        console.error(err)
-    })
-})
-
-app.get('/room/:id', (req,res) =>{
-    let roomData = {};
-    admin.firestore().doc(`/rooms/${req.params.id}`).get().then(doc =>{
-        if(!doc.exists){
-            return res.status(404).json({error: "Room does not exist"})
-        }
-        roomData = doc.data();
-        roomData.id = doc.id;
-        return res.json(roomData)
-    }).catch((err) =>{
-        console.error(err)
-        return res.status(404).json({error: "Cant find"})
-    })
-})
-
 app.post('/room',(req,res) =>{
-    let newRoom = {
-        name: req.body.name,
-        players: req.body.players,
-        hasPassword: req.body.hasPassword,
-        password: req.body.password
+    let { lobby, player } = req.body
+
+    if(isEmpty(lobby.name)){
+        return res.status(400).json({error: "Name cannot be empty."})
+    }
+    if(lobby.name.length > 20){
+        return res.status(400).json({error: "Name cannot be longer than 20 characters"})
+    }
+    if(lobby.hasPassword && isEmpty(lobby.password)){
+        return res.status(400).json({error:"Password cannot be empty."})
+    }
+    if(lobby.hasPassword && lobby.password.length > 20){
+        return res.status(400).json({error: "Password cannot be longer than 20 characters."})
     }
 
-    let errors = []
-
-    if(isEmpty(newRoom.name)){
-        errors.push("Name cannot be empty.")
-    }
-    if(newRoom.name.length > 20){
-        errors.push("Name cannot be longer than 20 characters")
-    }
-    if(newRoom.hasPassword && isEmpty(newRoom.password)){
-        errors.push("Password cannot be empty.")
-    }
-    if(newRoom.hasPassword && newRoom.password.length > 20){
-        errors.push("Password cannot be longer than 20 characters.")
-    }
-    if(errors.length > 0){
-        return res.status(400).json({errors: errors})
-    }
-    admin.firestore().collection('rooms').add(newRoom).then((doc) =>{
-        newRoom.id = doc.id
-        return res.json({ room: newRoom})
-    }).catch((err) =>{
-        res.status(500).json({error: 'something went wrong'})
+    const batch = admin.firestore().batch()
+    let newLobbyRef = admin.firestore().collection('rooms').doc()
+    let newPlayerRef = admin.firestore().collection('players').doc()
+    player.room = newLobbyRef.id
+    let lobbyPlayer = {name: player.name, host: true, player: newPlayerRef.id, room: player.room}
+    lobby.players=[lobbyPlayer]
+    batch.set(newLobbyRef, lobby)
+    batch.set(newPlayerRef, player)
+    batch.commit().then(() => {
+        return res.json({success: "Success", player: lobbyPlayer})
+    }).catch(err => {
         console.error(err)
-    })
-})
-
-app.delete("/delroom/:id",(req,res) =>{
-    const document = admin.firestore().doc(`/rooms/${req.params.id}`)
-    document.get().then(doc =>{
-        if(!doc.exists){
-            return res.status(404).json({error: 'Room not found'})
-        } else {
-            document.delete()
-        }
-    }).then(() => {
-        return res.json({message: 'Room deleted successfully'})
-    }).catch(err =>{
-        console.error(err)
-        res.status(500).json({error: "Something went wrong"})
+        return res.status(500).json({error: "Error committing batch"})
     })
 })
 

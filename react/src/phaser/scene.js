@@ -492,7 +492,7 @@ class playGame extends Phaser.Scene {
     this.socket = data.socket 
     this.users = []
     this.setUpSocket(this.socket) 
-    this.socket.emit("join", {player: data.player, room: data.room, name: data.name,host: data.host})
+    this.socket.emit("join")
     this.players = [null,null,null,null,null,null]
     this.turn = null
     this.bidding = false

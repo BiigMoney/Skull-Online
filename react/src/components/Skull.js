@@ -21,19 +21,18 @@ export default class Skull extends React.Component {
         scene: playGame
         };
       const game = new Phaser.Game(config);
-      let socket = socketio("http://localhost:8000")
       this.setState({
         game: game,
-        socket: socket
+        socket: this.props.socket
       })
-      socket.on("error", () => {
+      this.props.socket.on("error", () => {
         window.location.reload()
       })
-      const {player} = this.props.player
+      const player = this.props.player
       let bruno = {
         player: player.player,
         room: player.room,
-        socket: socket,
+        socket: this.props.socket,
         host: player.host,
         name: player.name
       }
@@ -41,8 +40,8 @@ export default class Skull extends React.Component {
     }
 
     componentWillUnmount(){
-      this.state.game.destroy(true, true)
-      this.state.socket.disconnect()
+      this.state.game ? this.state.game.destroy(true, true) : null
+      this.state.socket ? this.state.socket.disconnect() : null
       window.location.reload()
     }
     render() {

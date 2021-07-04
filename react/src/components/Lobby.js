@@ -1,5 +1,7 @@
 import React from "react";
 import axios from "axios"
+import { projectFirestore } from "../firebase/config"
+import background from "../assets/Capture.JPG"
 
 export default class Lobby extends React.Component {
 
@@ -8,59 +10,21 @@ export default class Lobby extends React.Component {
         name: null,
         players: null,
         lobbies: null,
-        errors: null,
+        lobbyError: null,
+        passwordError: null,
         scene: 0
     }
 
-    getthedata = () => {
-        const localname = localStorage.getItem('name')
-        if(localname === null || localname.length === 0){
-            this.props.history.push({
-                pathname: `/`
-            })
-        }
-        this.setState({
-            name: localname,
-            isLoading: true
-        })
-
-        axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/rooms").then( res =>{
-            this.setState({
-                lobbies: res.data
-            })
-            if(this.state.players){
-                this.setState({
-                    isLoading: false
-                })
-            }
-        }).catch(err =>{
-            this.setState({
-                errors: err
-            })
-        })
-
-        axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/players").then( res =>{
-            this.setState({
-                players: res.data
-            })
-            if(this.state.lobbies){
-                this.setState({
-                    isLoading: false
-                })
-            }
-        }).catch(err =>{
-            this.setState({
-                errors: err
-            })
-        })
-
-    }
-
     componentDidMount() {
+        const localname = localStorage.getItem('name')
+        const {socket} = this.props
+        if(!localname || localname.length === 0){
+            this.props.history.push('/')
+        }
+
         this.setState({
-            scene: 0
+            name: localname
         })
-        this.getthedata()
     }
 
     checkboxClick() {
@@ -72,33 +36,62 @@ export default class Lobby extends React.Component {
             input.disabled = true
         }
     }
+    
+    isEmpty(string){
+        return (!string || 0 === string.length);
+    }
 
-    submitLobby = () => {
+    submitLobby = (e) => {
+        this.setState({
+            lobbyError: null,
+            passwordError: null
+        })
+        e.preventDefault()
         let lobbyName = document.getElementById("lobbyName").value
-        let player = {
-            name: this.state.name, 
-            lobby: lobbyName
-        }
+        let hasPassword = document.getElementById("theCheck").value 
+        let password = document.getElementById("lobbyPassword").value 
         let lobby = {
             name: lobbyName,
             hasPassword: document.getElementById("theCheck").checked,
             password: document.getElementById("lobbyPassword").value,
-            players: []
         }
-        axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/room", lobby).then( res =>{
-            let roomid = res.data.room.id
-            axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/player", {name: this.state.name, room: roomid}).then( res =>{
-                let theplayer = {
-                    player: {player: res.data.player.id, room: roomid, name: this.state.name, host: true}
-                }
-                axios.put(`http://localhost:5000/skull-online-313fe/us-central1/api/addplayertoroom/${roomid}`, theplayer).then(() => {
-                    this.props.history.push({
-                        pathname: `/play`,
-                        state: {isAuthed: true, player: theplayer}
-                    })
-                })
+        let player= {
+            name: this.state.name
+        }
+
+        if(this.isEmpty(lobbyName)){
+            this.setState({
+                lobbyError: "Lobby name cannot be empty."
             })
+            return
+        }
+
+        if(lobbyName.length > 20){
+            this.setState({
+                lobbyError: "Lobby name cannot be longer than 20 characters"
+            })
+            return
+        }
+        
+        if(hasPassword && this.isEmpty(password)){
+            this.setState({
+                passwordError: "Password cannot be empty"
+            })
+            return
+        }
+
+        if(hasPassword && password.length > 20){
+            this.setState({
+                passwordError: "Password cannot be longer than 20 characters"
+            })
+            return
+        }
+
+        this.props.history.push({
+            pathname: "/play",
+            state: {isAuthed: true, player, lobby, host: true}
         })
+
     }
 
     joinlobby = (e) => {
@@ -141,58 +134,51 @@ export default class Lobby extends React.Component {
 
 	render() {
 		return (
-            <div>
-			<div style={{ textAlign: "center" }}>
-				<h1>Lobby Time!</h1>
-			</div>
+			<div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0}}>
             {!this.state.isLoading ? (
                 <div>
-                    <h4>Welcome {this.state.name}</h4>
-                    <h4>There are currently {this.state.players.length} people playing.</h4>
-                    <button className="btn btn-primary" onClick={this.getthedata}>Refresh</button>
-                    
+                    <div style={{marginTop: 50}}>
+                        <button style={{marginLeft:100, marginRight: 100}} className="btn btn-outline-primary" onClick={() => this.setState({scene:1})} data-toggle="button" aria-pressed="false" autoComplete="off">Create Lobby</button>    
+                        <button style={{marginLeft:100, marginRight: 100}}className="btn btn-outline-primary" onClick={() => this.setState({scene:2})}data-toggle="button" aria-pressed="false" autoComplete="off">Join Lobby</button>    
+                        <button style={{marginLeft:100, marginRight: 100}}className="btn btn-outline-primary" onClick={() => this.setState({scene:0})}data-toggle="button" aria-pressed="false" autoComplete="off">About</button>    
+                    </div> 
                     {this.state.scene === 0 ? (
-                        <div>
-                            <button disabled>Back</button>
-                        <div>
-                            <button onClick={() => this.setState({scene: 1})}>Create Lobby</button>
-                            <button onClick={() => this.setState({scene: 2})}>Join Lobby</button>
-                        </div>
-                        </div>
+                        <div style={{marginTop: 60}}>
+                    <h4 style={{marginTop: 15}}>Welcome {this.state.name}</h4>
+                    <h4>There are currently {this.state.players} people playing.</h4>
+                    </div>
                     ) : this.state.scene === 1 ? (
-                        <div>
-                        <button onClick={this.backbutton}>Back</button>
-                        <div>
-                            <form onSubmit={(e) => e.preventDefault()}>
-                                <p>Name:</p>
-                                <input autoComplete="off" type="text" id="lobbyName" placeholder="name..."/>
-                                <br/>
-                                <input type="checkbox" value="" id="theCheck" onClick={this.checkboxClick}/>
-                                <label for="defaultCheck2">
-                                Password?
-                                </label>
-                                <p>Password:</p>
-                                <input autoComplete="off" type="text" id="lobbyPassword" placeholder="name..." disabled/>
-                                <button onClick={this.submitLobby}>Create Lobby</button>
+                        <div style={{position: "absolute", top: "50%", left: "50%", marginTop: "-110px", marginLeft: "-250px", width: 500, height: 220, border: "3px solid #000"}}>
+                            <form style={{marginTop: 35}} onSubmit={this.submitLobby}>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Lobby Name:</h5>
+                                <input type="text" className="form-control-md" size="35" id="lobbyName"/>
+                            </div>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Password?</h5>
+                                <input type="checkbox" className="form-check-input" id="theCheck" onClick={this.checkboxClick}/>
+                            </div>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Password:</h5>
+                                <input type="text" disabled className="form-control-md" size="35" id="lobbyPassword"/>
+                            </div>
+                            <button type="submit" className="btn btn-outline-primary">Create Lobby</button>
                             </form>
-                        </div>
                         </div>
                     ) : (
                         <div>
-                        <button onClick={this.backbutton}>Back</button>
-                        <div>
                             {this.state.lobbies.length === 0 ? <p>There are no active lobbies</p> : (
                                 <div>
-                            {this.state.lobbies.map(lobby => {
+                            {this.state.lobbies.map((lobby,idx) => {
                                 return(
-                                    <div style={{display: "inline"}}>
+                                    <div style={{display: "inline"}} key={idx}>
                                         <p>{lobby.name}</p>
                                         {lobby.hasPassword ? (
                                             <div>
-                                                <form onSubmit={this.joinlobby}>
+                                                <form onSubmit={this.joinlobby} id={lobby.id}>
                                                 <p>Password:</p>
                                                 <input autoComplete="off" type="text" id="joinlobbypassword" id={lobby.id + "input"}/>
-                                                <button onClick={this.joinlobby} id={lobby.id}>Join</button>
+                                                <button type="submit" id={lobby.id}>Join</button>
                                                 </form>
                                             </div>
                                         ) : (
@@ -205,7 +191,6 @@ export default class Lobby extends React.Component {
                             })}
                             </div>
                             )}
-                        </div>
                         </div>
                     )}
                 </div>
