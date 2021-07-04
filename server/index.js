@@ -8,9 +8,6 @@ const { createNewGame, removeGame, getGame, addUserToGame, removeUserFromGame, g
 
 const PORT = process.env.PORT || 8000
 
-const router = require('./router')
-const { SSL_OP_NO_TICKET } = require('constants')
-
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server, {
@@ -19,14 +16,11 @@ const io = socketio(server, {
     }
 })
 
+const router = getRouter()
+
 io.on('connection', socket =>{
     console.log("Connection")
-    socket.join("main")
     
-    socket.on("getlobbyinfo", () => {
-        socket.emit("sendlobbyinfo", {games, users: users.length})
-    })
-
     socket.on('selectbase', (user, color) => {
         if(!user){
             return
@@ -213,6 +207,67 @@ io.on('connection', socket =>{
         }
     })
 })
+
+const getRouter = () => {
+    const router = express.Router()
+
+    router.get('/', (req, res) =>{
+        res.send('server is up and running')
+    })
+
+    router.get('/lobby', (req,res) => {
+        return res.json({games, users: users.length})
+    })
+
+    router.post('/createLobby', (req,res) => {
+        let socket = io.of("/").sockets.get(req.body.socketId)
+        if(!socket){
+            return res.status(400).json({error: "Could not find socket"})
+        }
+        let { username, name, password, hasPassword } = req.body
+        const {gameError, game} = createNewGame({username, name, password, hasPassword, id: uuidv4()})
+        if(gameError){
+            console.log("gameerror", gameError)
+            socket.emit("createlobbyerror", gameError)
+            return res.status(400).json({error: gameError})
+        }
+        socket.join(game.id)
+        const {userError, user} = addUser({id: socket.id, room: game.id, name: username, host: true})
+        if(userError){
+            removeGame(game.id)
+            socket.leave(game.id)
+            socket.emit("createlobbyerror", userError)
+            return res.status(400).json({error: userError})
+        }
+        addUserToGame(user)
+        return res.json({success: "Successfully created lobby."})
+    })
+
+    router.post("/joinLobby", (req,res) => {
+        let socket = io.of("/").sockets.get(req.body.socketId)
+        if(!socket){
+            return res.status(400).json({error: "Could not find socket"})
+        }
+        let { room, name, password } = req.body
+        let game = getGame(room)
+        if(game.password !== password){
+            return res.status(401).json({error: "Incorrect password"})
+        }
+        const { userError, user } = addUser({id: socket.id, room, name, host: false})
+        if(userError){
+            console.log(userError)
+            socket.emit("error")
+            return res.status(400).json({error: userError})
+        }
+        addUserToGame(user)
+        socket.join(user.room)
+        return res.json({success: "Successfully added user to game."})
+        
+    })
+
+    return router
+}
+
 
 app.use(router)
 

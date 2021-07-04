@@ -34,27 +34,27 @@ const createNewGame = ({username, name, password, hasPassword, id}) => {
 const removeGame = (id) => {
     const index = games.findIndex(game => game.roomid === id)
     if(index !== -1){
-        return games.splice(index, 1)[0]
+        return games.splice(index, 1)
     }
 }
 
 const getGame = (room) => games.find(game => game.roomid === room)
 
 const addUserToGame = (user) => {
-    const game = getGame(user.room)[0]
+    const game = getGame(user.room)
     console.log("game here", game)
     game.players.push(user)
     return game
 }
 
 const removeUserFromGame = (user) => {
-    let game = getGame(user.room)[0]
+    let game = getGame(user.room)
     if(!game){
         return null
     }
     const index = game.players.findIndex(player => user.id === player.id)
     if(index !== -1){
-        game.players.splice(index,1)[0]
+        game.players.splice(index,1)
         return game
     }
 }

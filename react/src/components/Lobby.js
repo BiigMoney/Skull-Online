@@ -12,6 +12,7 @@ export default class Lobby extends React.Component {
         lobbies: null,
         lobbyError: null,
         passwordError: null,
+        lobbyLoading: false,
         scene: 0
     }
 
@@ -21,9 +22,15 @@ export default class Lobby extends React.Component {
         if(!localname || localname.length === 0){
             this.props.history.push('/')
         }
-
         this.setState({
             name: localname
+        })
+        axios.get("/lobby").then(res => {
+            this.setState({
+                lobbies: res.data.games,
+                players: res.data.users,
+                isLoading: false
+            })
         })
     }
 
@@ -50,13 +57,11 @@ export default class Lobby extends React.Component {
         let lobbyName = document.getElementById("lobbyName").value
         let hasPassword = document.getElementById("theCheck").value 
         let password = document.getElementById("lobbyPassword").value 
-        let lobby = {
+        let request = {
+            username: this.state.name,
             name: lobbyName,
-            hasPassword: document.getElementById("theCheck").checked,
-            password: document.getElementById("lobbyPassword").value,
-        }
-        let player= {
-            name: this.state.name
+            hasPassword,
+            password
         }
 
         if(this.isEmpty(lobbyName)){
@@ -87,6 +92,24 @@ export default class Lobby extends React.Component {
             return
         }
 
+        this.setState({lobbyLoading: true})
+
+        axios.post("/createLobby", request).then(res => {
+            if(res?.data?.success){
+                this.props.history.push({
+                    pathname: "/play",
+                    state: {
+                        isAuthed: true
+                    }
+                })
+            } else {
+                this.setState({lobbyError: "Unknown error", lobbyLoading: false})
+            }
+        }).catch(err => {
+            console.error(err)
+            err?.response?.data?.error ? this.setState({lobbyError: err, lobbyLoading: false}) : this.setState({lobbyError: "Unknown error2", lobbyLoading: false})
+        })
+
         this.props.history.push({
             pathname: "/play",
             state: {isAuthed: true, player, lobby, host: true}
@@ -97,33 +120,6 @@ export default class Lobby extends React.Component {
     joinlobby = (e) => {
         e.preventDefault()
         const roomid = e.target.id
-        axios.get(`http://localhost:5000/skull-online-313fe/us-central1/api/room/${roomid}`).then(res => {
-            console.log(res.data)
-            if(res.data.hasPassword){
-                const trypassword = document.getElementById(`${roomid}input`).value
-                if(!(trypassword === res.data.password)){
-                    console.log(trypassword)
-                    console.log(res.data.password)
-                    this.setState({
-                        errors: "Incorrect password"
-                    })
-                    console.log("returning")
-                    return
-                }
-            }
-            axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/player", {name: this.state.name, room: roomid}).then( res =>{
-                let theplayer = {
-                    player: {player: res.data.player.id, room: roomid, name: this.state.name, host: false}
-                }
-                axios.put(`http://localhost:5000/skull-online-313fe/us-central1/api/addplayertoroom/${roomid}`, theplayer).then(() => {
-                    this.props.history.push({
-                        pathname: `/play`,
-                        state: {isAuthed: true, player: theplayer}
-                    })
-                })
-            })
-        })
-
     }
 
     backbutton = () => {

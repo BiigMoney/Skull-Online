@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react'
+import axios from "axios"
 import {BrowserRouter, Switch, Route} from "react-router-dom"
 import Lobby from './components/Lobby'
 import WelcomePage from './components/WelcomePage'
 import Game from './components/Game'
 import "../bootstrap.css"
 import socketio from 'socket.io-client'
+
+axios.defaults.baseURL = "http://localhost:8000"
 
 const Router = () =>{
     const [socket, setSocket] = useState(null)

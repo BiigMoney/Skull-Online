@@ -9,7 +9,7 @@ export default class Game extends React.Component {
         isAuthed: false,
         player: null,
         socket: null,
-        messages: []
+        messages: ["hi", "this is a test", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     }
 
     componentDidMount(){
@@ -17,22 +17,7 @@ export default class Game extends React.Component {
 
 
         const { state } = this.props.location;
-        console.log(state)
         if (state && state.isAuthed) {
-            let socket = socketio("http://localhost:8000")
-            if(state.host){
-
-            } else {
-            }
-            socket.emit("con", {...state.player})
-            this.setState({
-                isAuthed: true,
-                player: state.player,
-                socket
-            })
-            this.props.history.replace({
-                state: {}
-            })
             return
         }
 
