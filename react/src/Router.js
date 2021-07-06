@@ -1,21 +1,46 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from "axios"
 import {BrowserRouter, Switch, Route} from "react-router-dom"
-import App from './components/App'
 import Lobby from './components/Lobby'
 import WelcomePage from './components/WelcomePage'
 import Game from './components/Game'
 import "../bootstrap.css"
+import socketio from 'socket.io-client'
+
+axios.defaults.baseURL = "http://localhost:8000"
 
 const Router = () =>{
+    const [socket, setSocket] = useState(null)
+    const [error, setError] = useState(null)
+    useEffect(() => {
+        try {
+        const sock = socketio("http://localhost:8000")
+        sock.on("connect", () => {
+            setSocket(sock)
+        })
+        
+        } catch(err){
+            console.error(err)
+            setError("error")
+        }
+    }, [])
     return (
+        <div>
+        { socket ? ( 
         <BrowserRouter>
-        <Route path="/" component={App}/>
         <Switch>
-        <Route path='/' component={WelcomePage} exact/>
-        <Route path='/lobby' component={Lobby}/>
-        <Route path='/play' component={Game}/>
+        <Route path='/' component={(props) => <WelcomePage {...props} socket={socket}/>} exact/>
+        <Route path='/lobby' component={(props) => <Lobby {...props} socket={socket}/>}/>
+        <Route path='/play' component={(props) => <Game {...props} socket={socket}/>}/>
         </Switch>
         </BrowserRouter>
+        ) : error ? (
+            <div><p>Error lol</p></div>
+        ) : (
+            <div><p>Loading lol</p></div>
+        )
+        }
+        </div>
     )
 }
 

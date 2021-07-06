@@ -1,8 +1,8 @@
 import React from "react";
 import Phaser from "phaser";
 import playGame from "../phaser/scene";
-import socketio from 'socket.io-client'
 import { Redirect } from 'react-router-dom'
+import Handler from "../phaser/handler"
 
 export default class Skull extends React.Component {
 
@@ -15,34 +15,37 @@ export default class Skull extends React.Component {
 	  componentDidMount = () => {
       const config = {
         type: Phaser.AUTO,
-        parent: "phaser",
-        width: 1400,
-        height: 800,
-        scene: playGame
+        scale: {
+            mode: Phaser.Scale.FIT,
+            parent: 'phaser-example',
+            width: 1920,
+            height: 800
+        },
+        scene: playGame 
         };
       const game = new Phaser.Game(config);
-      let socket = socketio("http://localhost:8000")
       this.setState({
         game: game,
-        socket: socket
+        socket: this.props.socket
       })
-      socket.on("error", () => {
+      this.props.socket.on("error", () => {
         window.location.reload()
       })
-      const {player} = this.props.player
+      const player = this.props.player 
+      console.log(player)
       let bruno = {
-        player: player.player,
         room: player.room,
-        socket: socket,
+        socket: this.props.socket,
         host: player.host,
         name: player.name
       }
       game.scene.start("game", bruno)
+      game.embedded = false // game is embedded into a html iframe/object
     }
 
     componentWillUnmount(){
-      this.state.game.destroy(true, true)
-      this.state.socket.disconnect()
+      this.state.game ? this.state.game.destroy(true, true) : null
+      this.state.socket ? this.state.socket.disconnect() : null
       window.location.reload()
     }
     render() {

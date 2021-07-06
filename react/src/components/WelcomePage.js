@@ -1,4 +1,5 @@
 import React from "react";
+import background from "../assets/Capture.JPG"
 
 export default class WelcomePage extends React.Component {
 
@@ -29,12 +30,17 @@ export default class WelcomePage extends React.Component {
 
 	render() {
 		return (
-			<div style={{ textAlign: "center" }}>
-				<h1>Welcome!</h1>
+			<div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0}}>
+				<h1 style={{marginTop: 30}}>Welcome to Skull Online!</h1>
 				<h3>Enter your name to get started.</h3>
+				<div className="form-center">
 				<form onSubmit={this.submitName}>
-					<input id="name" autoComplete="off"/>
+					<div className="form-group">
+					<input className="form-control-lg" type="text" size="50" id="name" autoComplete="off"/>
+					</div>
+					<button className="btn btn-primary" style={{marginTop: 10}} type="submit">Play</button>
 				</form>
+				</div>
 				{this.state.errors ? <div><h5>{this.state.errors}</h5></div> : <div></div>}
 			</div>
 		);

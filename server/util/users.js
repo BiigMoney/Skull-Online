@@ -1,22 +1,15 @@
-const axios = require("axios")
-
 const users = []
 
-const addUser = ({id, player, room, host, name}) => {
+const addUser = ({id, room, host, name}) => {
     const existingUser = users.find(user => user.room === room && user.name === name)
     if(existingUser){
-    axios.delete(`http://localhost:5000/skull-online-313fe/us-central1/api/delplayer/${player}`).then(() => {
-        console.log("user delete because existing user")
-    }).catch(err => {
-        console.error(err)
-    })
-        return {error: "Player is already connected"}
+        return {userError: "Player is already connected"}
     }
 
-    const user = {id, player, room, host, name}
+    const user = {id, room, host, name}
     users.push(user)
     console.log("added user")
-    console.log(user.id, user.player, user.room, user.host, user.name)
+    console.log(user.id, user.room, user.host, user.name)
 
     return { user }
 

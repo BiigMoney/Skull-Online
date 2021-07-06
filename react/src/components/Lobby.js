@@ -1,5 +1,7 @@
 import React from "react";
 import axios from "axios"
+import { projectFirestore } from "../firebase/config"
+import background from "../assets/Capture.JPG"
 
 export default class Lobby extends React.Component {
 
@@ -8,59 +10,28 @@ export default class Lobby extends React.Component {
         name: null,
         players: null,
         lobbies: null,
-        errors: null,
+        lobbyError: null,
+        passwordError: null,
+        lobbyLoading: false,
         scene: 0
     }
 
-    getthedata = () => {
+    componentDidMount() {
         const localname = localStorage.getItem('name')
-        if(localname === null || localname.length === 0){
-            this.props.history.push({
-                pathname: `/`
-            })
+        const {socket} = this.props
+        if(!localname || localname.length === 0){
+            this.props.history.push('/')
         }
         this.setState({
-            name: localname,
-            isLoading: true
+            name: localname
         })
-
-        axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/rooms").then( res =>{
+        axios.get("/lobby").then(res => {
             this.setState({
-                lobbies: res.data
-            })
-            if(this.state.players){
-                this.setState({
-                    isLoading: false
-                })
-            }
-        }).catch(err =>{
-            this.setState({
-                errors: err
+                lobbies: res.data.games,
+                players: res.data.users,
+                isLoading: false
             })
         })
-
-        axios.get("http://localhost:5000/skull-online-313fe/us-central1/api/players").then( res =>{
-            this.setState({
-                players: res.data
-            })
-            if(this.state.lobbies){
-                this.setState({
-                    isLoading: false
-                })
-            }
-        }).catch(err =>{
-            this.setState({
-                errors: err
-            })
-        })
-
-    }
-
-    componentDidMount() {
-        this.setState({
-            scene: 0
-        })
-        this.getthedata()
     }
 
     checkboxClick() {
@@ -72,65 +43,111 @@ export default class Lobby extends React.Component {
             input.disabled = true
         }
     }
+    
+    isEmpty(string){
+        return (!string || 0 === string.length);
+    }
 
-    submitLobby = () => {
+    submitLobby = (e) => {
+        this.setState({
+            lobbyError: null,
+            passwordError: null
+        })
+        e.preventDefault()
         let lobbyName = document.getElementById("lobbyName").value
-        let player = {
-            name: this.state.name, 
-            lobby: lobbyName
-        }
-        let lobby = {
+        let hasPassword = document.getElementById("theCheck").checked
+        let password = hasPassword ? document.getElementById("lobbyPassword").value : ''
+        let request = {
+            socketId: this.props.socket.id,
+            username: this.state.name,
             name: lobbyName,
-            hasPassword: document.getElementById("theCheck").checked,
-            password: document.getElementById("lobbyPassword").value,
-            players: []
+            hasPassword,
+            password
         }
-        axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/room", lobby).then( res =>{
-            let roomid = res.data.room.id
-            axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/player", {name: this.state.name, room: roomid}).then( res =>{
-                let theplayer = {
-                    player: {player: res.data.player.id, room: roomid, name: this.state.name, host: true}
-                }
-                axios.put(`http://localhost:5000/skull-online-313fe/us-central1/api/addplayertoroom/${roomid}`, theplayer).then(() => {
-                    this.props.history.push({
-                        pathname: `/play`,
-                        state: {isAuthed: true, player: theplayer}
-                    })
-                })
+
+        if(this.isEmpty(lobbyName)){
+            this.setState({
+                lobbyError: "Lobby name cannot be empty."
             })
+            return
+        }
+
+        if(lobbyName.length > 20){
+            this.setState({
+                lobbyError: "Lobby name cannot be longer than 20 characters"
+            })
+            return
+        }
+        
+        if(hasPassword && this.isEmpty(password)){
+            this.setState({
+                passwordError: "Password cannot be empty"
+            })
+            return
+        }
+
+        if(hasPassword && password.length > 20){
+            this.setState({
+                passwordError: "Password cannot be longer than 20 characters"
+            })
+            return
+        }
+
+        this.setState({lobbyLoading: true})
+
+        axios.post("/createLobby", request).then(res => {
+            if(res?.data?.success){
+                this.props.history.push({
+                    pathname: "/play",
+                    state: {
+                        isAuthed: true,
+                        player: res.data.player
+                    }
+                })
+            } else {
+                this.setState({lobbyError: "Unknown error", lobbyLoading: false})
+            }
+        }).catch(err => {
+            console.error(err)
+            err?.response?.data?.error ? this.setState({lobbyError: err, lobbyLoading: false}) : this.setState({lobbyError: "Unknown error2", lobbyLoading: false})
         })
     }
 
-    joinlobby = (e) => {
-        e.preventDefault()
-        const roomid = e.target.id
-        axios.get(`http://localhost:5000/skull-online-313fe/us-central1/api/room/${roomid}`).then(res => {
-            console.log(res.data)
-            if(res.data.hasPassword){
-                const trypassword = document.getElementById(`${roomid}input`).value
-                if(!(trypassword === res.data.password)){
-                    console.log(trypassword)
-                    console.log(res.data.password)
-                    this.setState({
-                        errors: "Incorrect password"
-                    })
-                    console.log("returning")
-                    return
-                }
-            }
-            axios.post("http://localhost:5000/skull-online-313fe/us-central1/api/player", {name: this.state.name, room: roomid}).then( res =>{
-                let theplayer = {
-                    player: {player: res.data.player.id, room: roomid, name: this.state.name, host: false}
-                }
-                axios.put(`http://localhost:5000/skull-online-313fe/us-central1/api/addplayertoroom/${roomid}`, theplayer).then(() => {
-                    this.props.history.push({
-                        pathname: `/play`,
-                        state: {isAuthed: true, player: theplayer}
-                    })
-                })
-            })
-        })
+    joinlobby = (lobby) => {
 
+        let room = this.state.lobbies.find(room => room.roomid === lobby)
+        let password = room.hasPassword ? document.getElementById(`${lobby.roomid}password`).value : null
+        if(room.hasPassword && !room){
+            console.log("not room")
+            return
+        }
+        if(room.hasPassword && room.password !== password){
+            console.log("not password")
+            return
+        }
+
+        let request = {
+            socketId: this.props.socket.id,
+            password,
+            name: this.state.name,
+            room: lobby
+        }
+        axios.post('/joinLobby', request).then(res => {
+            if(res?.data?.success){
+                this.props.history.push({
+                    pathname: "/play",
+                    state: {
+                        isAuthed: true,
+                        player: res.data.player
+                    }
+                })
+            } else {
+                console.log("unknown error")
+
+            }
+        }).catch(err => {
+            console.error(err)
+        })
     }
 
     backbutton = () => {
@@ -141,71 +158,69 @@ export default class Lobby extends React.Component {
 
 	render() {
 		return (
-            <div>
-			<div style={{ textAlign: "center" }}>
-				<h1>Lobby Time!</h1>
-			</div>
+			<div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0}}>
             {!this.state.isLoading ? (
                 <div>
-                    <h4>Welcome {this.state.name}</h4>
-                    <h4>There are currently {this.state.players.length} people playing.</h4>
-                    <button className="btn btn-primary" onClick={this.getthedata}>Refresh</button>
-                    
+                    <div style={{marginTop: 50}}>
+                        <button style={{marginLeft:100, marginRight: 100}} className="btn btn-outline-primary" onClick={() => this.setState({scene:1})} data-toggle="button" aria-pressed="false" autoComplete="off">Create Lobby</button>    
+                        <button style={{marginLeft:100, marginRight: 100}}className="btn btn-outline-primary" onClick={() => this.setState({scene:2})}data-toggle="button" aria-pressed="false" autoComplete="off">Join Lobby</button>    
+                        <button style={{marginLeft:100, marginRight: 100}}className="btn btn-outline-primary" onClick={() => this.setState({scene:0})}data-toggle="button" aria-pressed="false" autoComplete="off">About</button>    
+                    </div> 
                     {this.state.scene === 0 ? (
-                        <div>
-                            <button disabled>Back</button>
-                        <div>
-                            <button onClick={() => this.setState({scene: 1})}>Create Lobby</button>
-                            <button onClick={() => this.setState({scene: 2})}>Join Lobby</button>
-                        </div>
-                        </div>
+                        <div style={{marginTop: 60}}>
+                    <h4 style={{marginTop: 15}}>Welcome {this.state.name}</h4>
+                    <h4>There are currently {this.state.players} people playing.</h4>
+                    </div>
                     ) : this.state.scene === 1 ? (
-                        <div>
-                        <button onClick={this.backbutton}>Back</button>
-                        <div>
-                            <form onSubmit={(e) => e.preventDefault()}>
-                                <p>Name:</p>
-                                <input autoComplete="off" type="text" id="lobbyName" placeholder="name..."/>
-                                <br/>
-                                <input type="checkbox" value="" id="theCheck" onClick={this.checkboxClick}/>
-                                <label for="defaultCheck2">
-                                Password?
-                                </label>
-                                <p>Password:</p>
-                                <input autoComplete="off" type="text" id="lobbyPassword" placeholder="name..." disabled/>
-                                <button onClick={this.submitLobby}>Create Lobby</button>
+                        <div style={{position: "absolute", top: "50%", left: "50%", marginTop: "-110px", marginLeft: "-250px", width: 500, height: 220, border: "3px solid #000"}}>
+                            <form style={{marginTop: 35}} onSubmit={this.submitLobby}>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Lobby Name:</h5>
+                                <input type="text" className="form-control-md" size="35" id="lobbyName"/>
+                            </div>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Password?</h5>
+                                <input type="checkbox" className="form-check-input" id="theCheck" onClick={this.checkboxClick}/>
+                            </div>
+                            <div style={{display: "block" }}>
+                                <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}} >Password:</h5>
+                                <input type="text" disabled className="form-control-md" size="35" id="lobbyPassword"/>
+                            </div>
+                            <button type="submit" className="btn btn-outline-primary">Create Lobby</button>
                             </form>
-                        </div>
+                            {this.state.lobbyError ? <p>{this.state.lobbyError}</p> : null}
+                            {this.state.passwordError ? <p>{this.state.passwordError}</p> : null}
                         </div>
                     ) : (
                         <div>
-                        <button onClick={this.backbutton}>Back</button>
-                        <div>
                             {this.state.lobbies.length === 0 ? <p>There are no active lobbies</p> : (
-                                <div>
-                            {this.state.lobbies.map(lobby => {
-                                return(
-                                    <div style={{display: "inline"}}>
-                                        <p>{lobby.name}</p>
-                                        {lobby.hasPassword ? (
-                                            <div>
-                                                <form onSubmit={this.joinlobby}>
-                                                <p>Password:</p>
-                                                <input autoComplete="off" type="text" id="joinlobbypassword" id={lobby.id + "input"}/>
-                                                <button onClick={this.joinlobby} id={lobby.id}>Join</button>
-                                                </form>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <button onClick={this.joinlobby} id={lobby.id}>Join</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )
-                            })}
+                                <div style={{position: "absolute", top: "50%", left: "50%", marginTop: "-275px", marginLeft: "-25%", width: "60%", height: 550, border: "3px solid #000"}}>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Host</th>
+                                                <th scope="col">Players</th>
+                                                <th scope="col">Password</th>
+                                                <th scope="col">Join</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {this.state.lobbies.map(lobby => {
+                                                return (
+                                                    <tr key={lobby.roomid}>
+                                                        <th scope="row">{lobby.name}</th>
+                                                        <th scope="row">{lobby.host}</th>
+                                                        <th scope="row">{lobby.players.length}</th>
+                                                        <th scope="row">{lobby.hasPassword ? <input type="text" id={`${lobby.roomid}password`} autoComplete="off"/> : <span>N/A</span>}</th>
+                                                        <th scope="row"><button className="btn btn-outline-primary" onClick={() => this.joinlobby(lobby.roomid)}>Join </button></th>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
                             </div>
                             )}
-                        </div>
                         </div>
                     )}
                 </div>

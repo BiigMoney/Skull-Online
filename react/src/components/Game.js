@@ -1,23 +1,28 @@
+import axios from "axios";
 import React from "react";
+import socketio from 'socket.io-client'
 import Skull from "./Skull"
 
 export default class Game extends React.Component {
 
     state = {
         isAuthed: false,
-        player: null
+        player: null,
+        socket: null,
+    }
+
+    sendChat = (e) =>{
+        e.preventDefault()
+        this.setState(prevState => ({
+            messages: [...prevState.messages, document.getElementById('chat').value]
+        }))
     }
 
     componentDidMount(){
-        console.log("made it to game")
-
 
         const { state } = this.props.location;
         if (state && state.isAuthed) {
-            this.setState({
-                isAuthed: true,
-                player: state.player
-            })
+            this.setState({isAuthed: true, player: state.player})
             this.props.history.replace({
                 state: {}
             })
@@ -32,8 +37,10 @@ export default class Game extends React.Component {
 			<div style={{ textAlign: "center" }}>
 			{this.state.isAuthed ? (
                 <div>
-                    <h1>User is authed</h1>
-                    <Skull player={this.state.player}/>
+                    <h1>Skull Online :logo:</h1>
+                    <div style={{display: "inline"}}>
+                    <Skull player={this.state.player} socket={this.props.socket}/>
+                    </div>
                 </div>
                 ) : <h1>User is not authed</h1>}
 			</div>

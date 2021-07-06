@@ -47,7 +47,7 @@ class playGame extends Phaser.Scene {
     this.load.image('yellowFlower', 'src/assets/Yellow/Flower.png');
     this.load.image('yellowSkull', 'src/assets/Yellow/Skull.png');
       
-    this.load.image("backdrop", 'src/assets/table.jpg'); 
+    this.load.image("backdrop", 'src/assets/962592.jpg'); 
   }
 
   createBases = (bases) => {
@@ -126,6 +126,7 @@ class playGame extends Phaser.Scene {
   }
 
   selectBase = (user, color) => {
+    console.log("selecting base")
     user.folded = false 
     user.hasLost = false 
     user.isPlaying = true
@@ -431,6 +432,7 @@ class playGame extends Phaser.Scene {
     socket.on("userplaying", self.selectBase)
     socket.on("initgame", (game, user) => {
       //set up players, makes objects visible, loop through events
+      console.log("initgame", game, user)
       self.me = user
       game.events.forEach(event => {
         console.log(event)
@@ -492,7 +494,7 @@ class playGame extends Phaser.Scene {
     this.socket = data.socket 
     this.users = []
     this.setUpSocket(this.socket) 
-    this.socket.emit("join", {player: data.player, room: data.room, name: data.name,host: data.host})
+    this.socket.emit("join")
     this.players = [null,null,null,null,null,null]
     this.turn = null
     this.bidding = false
@@ -501,7 +503,11 @@ class playGame extends Phaser.Scene {
     this.biddingOBJs = []
 
 
-    this.add.image(0,0,"backdrop")
+    let background = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2,"backdrop")
+    let scaleX = this.cameras.main.width / background.width
+let scaleY = this.cameras.main.height / background.height
+let scale = Math.max(scaleX, scaleY)
+background.setScale(scale).setScrollFactor(0)
 
     this.info = this.add.text(1000,500,"Current bid is 0 by null")
     this.info.visible = false
