@@ -55,9 +55,10 @@ export default class Lobby extends React.Component {
         })
         e.preventDefault()
         let lobbyName = document.getElementById("lobbyName").value
-        let hasPassword = document.getElementById("theCheck").value 
-        let password = document.getElementById("lobbyPassword").value 
+        let hasPassword = document.getElementById("theCheck").checked
+        let password = hasPassword ? document.getElementById("lobbyPassword").value : ''
         let request = {
+            socketId: this.props.socket.id,
             username: this.state.name,
             name: lobbyName,
             hasPassword,
@@ -99,7 +100,8 @@ export default class Lobby extends React.Component {
                 this.props.history.push({
                     pathname: "/play",
                     state: {
-                        isAuthed: true
+                        isAuthed: true,
+                        player: res.data.player
                     }
                 })
             } else {
@@ -109,17 +111,43 @@ export default class Lobby extends React.Component {
             console.error(err)
             err?.response?.data?.error ? this.setState({lobbyError: err, lobbyLoading: false}) : this.setState({lobbyError: "Unknown error2", lobbyLoading: false})
         })
-
-        this.props.history.push({
-            pathname: "/play",
-            state: {isAuthed: true, player, lobby, host: true}
-        })
-
     }
 
-    joinlobby = (e) => {
-        e.preventDefault()
-        const roomid = e.target.id
+    joinlobby = (lobby) => {
+
+        let room = this.state.lobbies.find(room => room.roomid === lobby)
+        let password = room.hasPassword ? document.getElementById(`${lobby.roomid}password`).value : null
+        if(room.hasPassword && !room){
+            console.log("not room")
+            return
+        }
+        if(room.hasPassword && room.password !== password){
+            console.log("not password")
+            return
+        }
+
+        let request = {
+            socketId: this.props.socket.id,
+            password,
+            name: this.state.name,
+            room: lobby
+        }
+        axios.post('/joinLobby', request).then(res => {
+            if(res?.data?.success){
+                this.props.history.push({
+                    pathname: "/play",
+                    state: {
+                        isAuthed: true,
+                        player: res.data.player
+                    }
+                })
+            } else {
+                console.log("unknown error")
+
+            }
+        }).catch(err => {
+            console.error(err)
+        })
     }
 
     backbutton = () => {
@@ -160,31 +188,37 @@ export default class Lobby extends React.Component {
                             </div>
                             <button type="submit" className="btn btn-outline-primary">Create Lobby</button>
                             </form>
+                            {this.state.lobbyError ? <p>{this.state.lobbyError}</p> : null}
+                            {this.state.passwordError ? <p>{this.state.passwordError}</p> : null}
                         </div>
                     ) : (
                         <div>
                             {this.state.lobbies.length === 0 ? <p>There are no active lobbies</p> : (
-                                <div>
-                            {this.state.lobbies.map((lobby,idx) => {
-                                return(
-                                    <div style={{display: "inline"}} key={idx}>
-                                        <p>{lobby.name}</p>
-                                        {lobby.hasPassword ? (
-                                            <div>
-                                                <form onSubmit={this.joinlobby} id={lobby.id}>
-                                                <p>Password:</p>
-                                                <input autoComplete="off" type="text" id="joinlobbypassword" id={lobby.id + "input"}/>
-                                                <button type="submit" id={lobby.id}>Join</button>
-                                                </form>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <button onClick={this.joinlobby} id={lobby.id}>Join</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )
-                            })}
+                                <div style={{position: "absolute", top: "50%", left: "50%", marginTop: "-275px", marginLeft: "-25%", width: "60%", height: 550, border: "3px solid #000"}}>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Host</th>
+                                                <th scope="col">Players</th>
+                                                <th scope="col">Password</th>
+                                                <th scope="col">Join</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {this.state.lobbies.map(lobby => {
+                                                return (
+                                                    <tr key={lobby.roomid}>
+                                                        <th scope="row">{lobby.name}</th>
+                                                        <th scope="row">{lobby.host}</th>
+                                                        <th scope="row">{lobby.players.length}</th>
+                                                        <th scope="row">{lobby.hasPassword ? <input type="text" id={`${lobby.roomid}password`} autoComplete="off"/> : <span>N/A</span>}</th>
+                                                        <th scope="row"><button className="btn btn-outline-primary" onClick={() => this.joinlobby(lobby.roomid)}>Join </button></th>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
                             </div>
                             )}
                         </div>

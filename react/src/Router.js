@@ -15,7 +15,10 @@ const Router = () =>{
     useEffect(() => {
         try {
         const sock = socketio("http://localhost:8000")
-        setSocket(sock)
+        sock.on("connect", () => {
+            setSocket(sock)
+        })
+        
         } catch(err){
             console.error(err)
             setError("error")
@@ -26,9 +29,9 @@ const Router = () =>{
         { socket ? ( 
         <BrowserRouter>
         <Switch>
-        <Route path='/' component={() => <WelcomePage socket={socket}/>} exact/>
-        <Route path='/lobby' component={() => <Lobby socket={socket}/>}/>
-        <Route path='/play' component={() => <Game socket={socket}/>}/>
+        <Route path='/' component={(props) => <WelcomePage {...props} socket={socket}/>} exact/>
+        <Route path='/lobby' component={(props) => <Lobby {...props} socket={socket}/>}/>
+        <Route path='/play' component={(props) => <Game {...props} socket={socket}/>}/>
         </Switch>
         </BrowserRouter>
         ) : error ? (

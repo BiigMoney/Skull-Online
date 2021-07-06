@@ -2,21 +2,22 @@ const express = require('express')
 const socketio = require('socket.io')
 const http = require('http')
 const { v4: uuidv4 } = require('uuid')
-
+var cors = require('cors')
 const { addUser, removeUser, getUser, getUsersInRoom, users } = require('./util/users.js')
 const { createNewGame, removeGame, getGame, addUserToGame, removeUserFromGame, games } = require('./util/game.js')
 
 const PORT = process.env.PORT || 8000
 
+const bodyParser = require('body-parser')
 const app = express()
+app.use(cors())
+app.use(bodyParser())
 const server = http.createServer(app)
 const io = socketio(server, {
     cors: {
         origin: "http://localhost:8080"
     }
 })
-
-const router = getRouter()
 
 io.on('connection', socket =>{
     console.log("Connection")
@@ -62,7 +63,6 @@ io.on('connection', socket =>{
     })
 
     socket.on('bid', (color, bid, room) => {
-        console.log("bidding")
         let game = getGame(room)
         if(!game){
             io.to(room).emit("error")
@@ -132,43 +132,9 @@ io.on('connection', socket =>{
         io.to(room).emit("resetgame")
     })
 
-    socket.on("createlobby", ({name, password, hasPassword, username}) => {
-        const {gameError, game} = createNewGame({username, name, password, hasPassword, id: uuidv4()})
-        if(gameError){
-            console.log("gameerror", gameError)
-            socket.emit("createlobbyerror", gameError)
-            return
-        }
-        socket.leave("main")
-        socket.join(game.id)
-        const {userError, user} = addUser({id: socket.id, room: game.id, name: username, host: true})
-        if(userError){
-            removeGame(game.id)
-            socket.leave(game.id)
-            socket.emit("createlobbyerror", userError)
-            return
-        }
-        addUserToGame(user)
-        socket.emit("createlobbysuccess")
-    })
-
-    socket.on("joinlobby", ({room, name, host}) => {
-        const { userError, user } = addUser({id: socket.id, room, name, host})
-        if(userError){
-            console.log(userError)
-            socket.emit("error")
-            return
-        }
-        socket.join(user.room)
-        let game = null
-        if(user.host){
-            game = createNewGame(user)
-        } else if(getGame(user.room).length > 0){
-            game = addUserToGame(user)
-        } else {
-            socket.emit("error")
-            return
-        }
+    socket.on("join", () => {
+        let user = getUser(socket.id)
+        const game = getGame(user.room) 
         socket.emit("initgame", game, user)
         io.to(user.room).emit("userjoined", user)
     })
@@ -178,9 +144,7 @@ io.on('connection', socket =>{
         removeUserFromGame(user)
         removeUser(socket.id)
 
-        console.log(socket.rooms)
         socket.leave(user.room)
-        console.log(socket.rooms)
     })
 
     socket.on('disconnect', () =>{
@@ -192,12 +156,6 @@ io.on('connection', socket =>{
         if(!user){
             console.log("not user")
             return
-        }
-        let thereq = {
-            player: user.player,
-            room: user.room,
-            name: user.name,
-            host: user.host
         }
         let game = removeUserFromGame(user)
         if(game && user.host){
@@ -231,8 +189,8 @@ const getRouter = () => {
             socket.emit("createlobbyerror", gameError)
             return res.status(400).json({error: gameError})
         }
-        socket.join(game.id)
-        const {userError, user} = addUser({id: socket.id, room: game.id, name: username, host: true})
+        socket.join(game.roomid)
+        const {userError, user} = addUser({id: socket.id, room: game.roomid, name: username, host: true})
         if(userError){
             removeGame(game.id)
             socket.leave(game.id)
@@ -240,7 +198,7 @@ const getRouter = () => {
             return res.status(400).json({error: userError})
         }
         addUserToGame(user)
-        return res.json({success: "Successfully created lobby."})
+        return res.json({success: "Successfully created lobby.", player: user})
     })
 
     router.post("/joinLobby", (req,res) => {
@@ -250,10 +208,11 @@ const getRouter = () => {
         }
         let { room, name, password } = req.body
         let game = getGame(room)
-        if(game.password !== password){
+        if(game.hasPassword && game.password !== password){
             return res.status(401).json({error: "Incorrect password"})
         }
         const { userError, user } = addUser({id: socket.id, room, name, host: false})
+        console.log(user)
         if(userError){
             console.log(userError)
             socket.emit("error")
@@ -261,13 +220,14 @@ const getRouter = () => {
         }
         addUserToGame(user)
         socket.join(user.room)
-        return res.json({success: "Successfully added user to game."})
+        return res.json({success: "Successfully added user to game.", player: user})
         
     })
 
     return router
 }
 
+const router = getRouter()
 
 app.use(router)
 
