@@ -1,5 +1,5 @@
 import React from "react";
-import background from "../assets/Capture.JPG"
+import background from "../assets/table.JPG"
 
 export default class WelcomePage extends React.Component {
 
@@ -21,6 +21,12 @@ export default class WelcomePage extends React.Component {
 		if(name === null || name.length === 0){
 			this.setState({
 				errors: "Name cannot be empty"
+			})
+			return
+		}
+		if(name.length > 20){
+			this.setState({
+				errors: "Name cannot be longer than 20 characters"
 			})
 			return
 		}

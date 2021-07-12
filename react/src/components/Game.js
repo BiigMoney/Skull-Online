@@ -11,13 +11,6 @@ export default class Game extends React.Component {
         socket: null,
     }
 
-    sendChat = (e) =>{
-        e.preventDefault()
-        this.setState(prevState => ({
-            messages: [...prevState.messages, document.getElementById('chat').value]
-        }))
-    }
-
     componentDidMount(){
 
         const { state } = this.props.location;
@@ -37,9 +30,8 @@ export default class Game extends React.Component {
 			<div style={{ textAlign: "center" }}>
 			{this.state.isAuthed ? (
                 <div>
-                    <h1>Skull Online :logo:</h1>
-                    <div style={{display: "inline"}}>
-                    <Skull player={this.state.player} socket={this.props.socket}/>
+                    <div>
+                    <Skull history={this.props.history} player={this.state.player} socket={this.props.socket}/>
                     </div>
                 </div>
                 ) : <h1>User is not authed</h1>}

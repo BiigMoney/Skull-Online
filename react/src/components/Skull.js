@@ -3,6 +3,8 @@ import Phaser from "phaser";
 import playGame from "../phaser/scene";
 import { Redirect } from 'react-router-dom'
 import Handler from "../phaser/handler"
+import background from "../assets/962592.jpg"
+import $ from 'jquery'
 
 export default class Skull extends React.Component {
 
@@ -12,14 +14,19 @@ export default class Skull extends React.Component {
       redirect: null
     }
 
+    leaveGame = () => {
+      this.state?.game?.destroy(true, true)
+      this.props.history.push('/lobby')
+    }
+
 	  componentDidMount = () => {
       const config = {
         type: Phaser.AUTO,
         scale: {
             mode: Phaser.Scale.FIT,
             parent: 'phaser-example',
-            width: 1920,
-            height: 800
+            width: 1400,
+            height: 787
         },
         scene: playGame 
         };
@@ -28,9 +35,11 @@ export default class Skull extends React.Component {
         game: game,
         socket: this.props.socket
       })
-      this.props.socket.on("error", () => {
-        window.location.reload()
+      this.props.socket.on("error", (error) => {
+        this.state.game.destroy(true, true)
+        this.props.history.push({pathname: "/lobby", state: {error: true, code: error}})
       })
+      this.props.socket.on("leave",this.leaveGame)
       const player = this.props.player 
       console.log(player)
       let bruno = {
@@ -40,7 +49,6 @@ export default class Skull extends React.Component {
         name: player.name
       }
       game.scene.start("game", bruno)
-      game.embedded = false // game is embedded into a html iframe/object
     }
 
     componentWillUnmount(){
@@ -51,7 +59,7 @@ export default class Skull extends React.Component {
     render() {
             return (
                 <div>
-                  {this.state.redirect ? <Redirect to='/'/>:null}
+                {this.state.redirect ? <Redirect to='/'/>:null}
                 </div>
             );
         }

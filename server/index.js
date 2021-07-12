@@ -15,7 +15,8 @@ app.use(bodyParser())
 const server = http.createServer(app)
 const io = socketio(server, {
     cors: {
-        origin: "http://localhost:8080"
+        origin: "192.168.0.12:8080",
+        allowedHeaders: ['192.168.0.12:8080']
     }
 })
 
@@ -141,10 +142,24 @@ io.on('connection', socket =>{
 
     socket.on("leavegame", () => {
         let user = getUser(socket.id)
-        removeUserFromGame(user)
+        if(!user){
+            return
+        }
+        let game = removeUserFromGame(user)
+        if(game.players.length === 0 || user.host){
+            removeGame(game)
+        } else {
+            game.events.push({name: "leavegame", args: [socket.id]})
+        }
         removeUser(socket.id)
 
         socket.leave(user.room)
+        if(user.host && game.players.length > 0){
+            io.to(user.room).emit("error", "Host has closed the lobby.")
+        } else {
+            io.to(user.room).emit("leavegame", socket.id)
+        }
+        socket.emit("leave")
     })
 
     socket.on('disconnect', () =>{
@@ -158,6 +173,14 @@ io.on('connection', socket =>{
             return
         }
         let game = removeUserFromGame(user)
+        if(!game){
+            console.log("not game")
+            return
+        }
+        if(!user.host){
+            io.to(user.room).emit("leavegame", socket.id)
+            game.events.push({name: "leavegame", args: [socket.id]})
+        }
         if(game && user.host){
             console.log("deleting game")
             removeGame(user.room)

@@ -1,4 +1,16 @@
-games = []
+/**/games = [{roomid: "lol", players: [], name: "12345678912345678900", events: [], password: null, hasPassword: false, host: "HuuuuuuuuuuuuugeMoney"},
+{roomid: "lol2", players: [], name: "lol2", events: [], password: "lol", hasPassword: true, host: "lol2"},
+{roomid: "lol3", players: [], name: "lol3", events: [], password: null, hasPassword: false, host: "lol3"},
+{roomid: "lol4", players: [], name: "lol4", events: [], password: null, hasPassword: false, host: "lol4"},
+{roomid: "lol5", players: [], name: "lol5", events: [], password: "null", hasPassword: true, host: "lol5"},
+{roomid: "lol6", players: [], name: "lol6", events: [], password: null, hasPassword: false, host: "lol6"},
+{roomid: "lol7", players: [], name: "lol7", events: [], password: "lolo", hasPassword: true, host: "lol7"},
+{roomid: "lol8", players: [], name: "lol8", events: [], password: null, hasPassword: false, host: "lol8"},
+{roomid: "lol9", players: [], name: "lol9", events: [], password: null, hasPassword: false, host: "lol9"},
+{roomid: "lol10", players: [], name: "lol10", events: [], password: null, hasPassword: false, host: "lol10"},
+{roomid: "lol11", players: [], name: "lol11", events: [], password: null, hasPassword: false, host: "lol11"},
+{roomid: "lol12", players: [], name: "lol12", events: [], password: null, hasPassword: false, host: "lol12"}]
+//games = []
 
 const isEmpty = (string) => {
     return (!string || 0 === string.length);

@@ -62,6 +62,17 @@ class playGame extends Phaser.Scene {
     }
 
   }
+  
+  createPlayerText = () => {
+    this.playerText = [null,null,null,null,null,null]
+    for(let y = 0; y < 2; y++){
+      for(let x = 0; x < 3; x++){
+        let xy = x + 3*y
+        this.playerText[xy] = this.add.text(info.base.x[x], info.base.y[y], "").setOrigin(0.5)
+        this.playerText[xy].visible = false
+      }
+    }
+  }
 
   setBasesInteractive = (bases, value) => {
     bases.forEach(base => { value ? base.setInteractive() : base.disableInteractive()})
@@ -136,6 +147,8 @@ class playGame extends Phaser.Scene {
     let y = Math.floor(num/3)
     this.bases[num].visible = false 
     this.bases[num].disableInteractive()
+    console.log(user.name)
+    this.playerText[x+(3*y)].setText(user.name).setColor(info.hexColors[x+(3*y)]).visible = true
     if(user.id === this.me.id){
       this.me.isPlaying = true 
       this.me.isFolded = false 
@@ -259,7 +272,7 @@ class playGame extends Phaser.Scene {
           if(this.color === info.colors[currentNum]){ 
             this.resetButton.setInteractive().visible = true
           }
-          this.turn = null
+          this.turn = "" 
         } else {
           console.log(this.players[currentNum])
           this.setTurn(info.colors[currentNum])
@@ -350,7 +363,7 @@ class playGame extends Phaser.Scene {
           if(this.turn === this.color){
             this.resetButton.setInteractive().visible = true
           }
-          this.turn = null
+          this.turn = "" 
         }
       }
     }
@@ -423,6 +436,24 @@ class playGame extends Phaser.Scene {
     this.setNextTurn(color)
   }
 
+  playerLeave = (id) => {
+    let idx = this.players.indexOf(this.players.find(a => a?.id === id))
+    if(idx < 0){
+      return
+    }
+    let color = info.colors[idx]
+    this.playerText[idx].setText('')
+    this.players[idx] = null 
+    if(this.turn){
+      this.bases[idx].visible = false
+      if(this.turn === color){
+        this.setNextTurn(color)
+      }
+    } else {
+      this.bases[idx].setInteractive().visible = true
+    }
+  } 
+
   setUpSocket = (socket) => {
     let self = this
     socket.on("userjoined", (user) => {
@@ -447,6 +478,7 @@ class playGame extends Phaser.Scene {
     socket.on("flipcard", self.selectDownDisk) 
     socket.on("chooseremove", self.chooseRemove)
     socket.on("playerlost", self.playerLost)
+    socket.on("leavegame", self.playerLeave)
     socket.on("wingame", (player) => {
       //display text indicating player has won the game, reset game
     })
@@ -511,6 +543,14 @@ background.setScale(scale).setScrollFactor(0)
 
     this.info = this.add.text(1000,500,"Current bid is 0 by null")
     this.info.visible = false
+    this.createPlayerText()
+
+    this.leaveGame = this.add.zone(1275, 725, 200, 50).setOrigin(0.5, 0.5).setInteractive().on("pointerdown", function() {
+      console.log("click")
+      this.scene.socket.emit("leavegame", this.scene.me)
+    })
+    this.add.graphics().lineStyle(4, 0x000000).strokeRect(1175,700,200,50)
+    this.add.text(1275,725,"Leave").setOrigin(0.5,0.5)
 
     this.bidUp = this.add.text(1300,400,"Add").on('pointerdown', function() {this.scene.faceDownCards.length > this.scene.currentBid? this.scene.bidNum.setText(++this.scene.currentBid) : null})
     this.bidUp.visible = false
@@ -544,7 +584,7 @@ background.setScale(scale).setScrollFactor(0)
     //set on game create 
     this.createBases(this.bases)
     this.setBasesInteractive(this.bases,true)
-    this.text = this.add.text(520,400,"Select a color by clicking on a mat.")
+    this.text = this.add.text(this.game.config.width/2,this.game.config.height/2,"Select a color by clicking on a mat.").setOrigin(0.5)
 
     this.input.on('drag', function (pointer, gameObject, x, y) {
       gameObject.x = x
@@ -579,7 +619,8 @@ background.setScale(scale).setScrollFactor(0)
     "fold": this.fold,
     "flipcard": this.selectDownDisk,
     "chooseremove": this.chooseRemove,
-    "playerlost": this.playerLost
+    "playerlost": this.playerLost,
+    "leavegame": this.playerLeave
   }
 
 
