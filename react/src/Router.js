@@ -3,6 +3,8 @@ import {BrowserRouter, Switch, Route} from "react-router-dom"
 import Lobby from './components/Lobby'
 import WelcomePage from './components/WelcomePage'
 import Game from './components/Game'
+import 'bootstrap/dist/js/bootstrap.js';
+import "bootstrap/js/src/collapse.js"
 import "../bootstrap.css"
 import "../extra.css"
 import socketio from 'socket.io-client'

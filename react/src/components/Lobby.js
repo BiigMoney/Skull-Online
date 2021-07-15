@@ -11,10 +11,13 @@ export default class Lobby extends React.Component {
         name: null,
         players: null,
         lobbies: null,
+        allLobbies: null,
         lobbyError: null,
         passwordError: null,
         lobbyLoading: false,
-        scene: 0
+        scene: 0,
+        search: "",
+        lobbyID: null
     }
 
     componentDidMount() {
@@ -28,6 +31,7 @@ export default class Lobby extends React.Component {
         axios.get("http://192.168.0.12:8000/lobby").then(res => {
             this.setState({
                 lobbies: res.data.games,
+                allLobbies: res.data.games,
                 players: res.data.users,
                 isLoading: false
             })
@@ -35,8 +39,10 @@ export default class Lobby extends React.Component {
     }
 
     selectTable = (id) => {
+        this.setState({lobbyID: id})
         $(`#${id}`).addClass('tableSelect').siblings().removeClass('tableSelect')
-        $('#joinButton').prop('disabled', false)
+        document.getElementById("joinButton").disabled = false
+        $("#joinButton").on('click', this.joinlobby)
     }
 
     checkboxClick() {
@@ -54,6 +60,9 @@ export default class Lobby extends React.Component {
     }
 
     submitLobby = (e) => {
+        if(this.state.lobbyLoading){
+            return
+        }
         this.setState({
             lobbyError: null,
             passwordError: null
@@ -118,24 +127,27 @@ export default class Lobby extends React.Component {
         })
     }
 
-    joinlobby = (lobby) => {
-
-        let room = this.state.lobbies.find(room => room.roomid === lobby)
-        let password = room.hasPassword ? document.getElementById(`${lobby.roomid}password`).value : null
-        if(room.hasPassword && !room){
-            console.log("not room")
+    joinLobbyPassword = () => {
+        let room = this.state.lobbies.find(room => room.roomid === this.state.lobbyID)
+        let password = document.getElementById("passwordInput").value
+        if(this.isEmpty(password)){
+            console.log("empty")
             return
         }
-        if(room.hasPassword && room.password !== password){
-            console.log("not password")
+        if(password.length > 20){
+            console.log("over 20")
             return
         }
-
+        if(password != room.password){
+            console.log(password, room.password)
+            console.log("doesnt match")
+            return
+        }
         let request = {
             socketId: this.props.socket.id,
             password,
             name: this.state.name,
-            room: lobby
+            room: this.state.lobbyID 
         }
         axios.post('http://192.168.0.12:8000/joinLobby', request).then(res => {
             if(res?.data?.success){
@@ -155,9 +167,53 @@ export default class Lobby extends React.Component {
         })
     }
 
+    joinlobby = () => {
+        console.log(this.state.lobbyID)
+        let room = this.state.lobbies.find(room => room.roomid === this.state.lobbyID)
+
+        if(room.hasPassword){
+            $("#hiddenModalButton").trigger("click")
+        } else {
+            let request = {
+                socketId: this.props.socket.id,
+                password: "",
+                name: this.state.name,
+                room: this.state.lobbyID 
+            }
+            axios.post('http://192.168.0.12:8000/joinLobby', request).then(res => {
+                if(res?.data?.success){
+                    this.props.history.push({
+                        pathname: "/play",
+                        state: {
+                            isAuthed: true,
+                            player: res.data.player
+                        }
+                    })
+                } else {
+                    console.log("unknown error")
+
+                }
+            }).catch(err => {
+                console.error(err)
+            })
+        }
+
+    }
+
     backbutton = () => {
        localStorage.removeItem('name')
        this.props.history.push("/") 
+    }
+
+    refreshLobby = () => {
+        axios.get("http://192.168.0.12:8000/lobby").then(res => {
+            this.setState({
+                lobbies: res.data.games,
+                allLobbies: res.data.games.filter(a => a.name.includes(this.state.search)),
+                players: res.data.users,
+                isLoading: false
+            })
+        })
     }
 
 	render() {
@@ -205,38 +261,57 @@ export default class Lobby extends React.Component {
                                     <input type="text" className="form-control-md" autoComplete="false" onChange={this.changeSearch}/>
                                     <button type="button" style={{float: "right"}} onClick={this.refreshLobby}>R</button>
                                     </div>
-                                    <div style={{overflow: "auto", display: "block", height: 450}}>
-                                    <table class="table table-bordered ">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Name</th>
-                                                <th scope="col">Host</th>
-                                                <th scope="col">Players</th>
-                                                <th scope="col">Password</th>
-                                                <th scope="col">Join</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {this.state.lobbies.map(lobby => {
-                                                return (
-                                                    <tr key={lobby.roomid} id={lobby.roomid} onClick={() => this.selectTable(lobby.roomid)}>
-                                                        <th scope="row">{lobby.name}</th>
-                                                        <th scope="row">{lobby.host}</th>
-                                                        <th scope="row">{lobby.players.length}</th>
-                                                        <th scope="row">{lobby.hasPassword ? <input type="text" id={`${lobby.roomid}password`} className="form-control" autoComplete="off"/> : <span>N/A</span>}</th>
-                                                        <th scope="row"><button className="btn btn-outline-primary" onClick={() => this.joinlobby(lobby.roomid)}>Join </button></th>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
-                                    </div>
-                                    <button id="joinButton" style={{justifySelf: "center"}}type="button" className="btn btn-outline-primary" disabled>Join</button>
+                                    <div class="table-responsive">
+                    <table class="table table-fixed">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="col-3">Name</th>
+                                <th scope="col" class="col-3">Host</th>
+                                <th scope="col" class="col-3">Players</th>
+                                <th scope="col" class="col-3">Password?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.state.lobbies.map((lobby, idx) => {
+                                return (
+                                    <tr key={idx} onClick={() => this.selectTable(lobby.roomid)} id={lobby.roomid}>
+                                        <th scope="row" className="col-3">{lobby.name}</th>
+                                        <th className="col-3">{lobby.host}</th>
+                                        <th className="col-3">{lobby.players.length}</th>
+                                        <th className="col-3">{lobby.hasPassword ? "Yes" : "No"}</th>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                                    <button id="joinButton" style={{justifySelf: "center"}} type="button" className="btn btn-outline-primary" disabled >Join</button>
                             </div>
                             </div>
                             )}
                         </div>
                     )}
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter" hidden="hidden" id="hiddenModalButton">lol</button>
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Password</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <input type="text" className="form-control" id="passwordInput"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onClick={this.joinLobbyPassword}>Join</button>
+      </div>
+    </div>
+  </div>
+</div>
                 </div>
             ) : <div><p>Loading...</p></div>}
             </div>
