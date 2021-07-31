@@ -2,7 +2,6 @@ import React from "react";
 import Phaser from "phaser";
 import playGame from "../phaser/scene";
 import { Redirect } from 'react-router-dom'
-import Handler from "../phaser/handler"
 import background from "../assets/962592.jpg"
 import $ from 'jquery'
 
@@ -15,13 +14,17 @@ export default class Skull extends React.Component {
     }
 
     leaveGame = () => {
-      this.state?.game?.destroy(true, true)
+      this.state?.game?.destroy(true, false)
       this.props.history.push('/lobby')
+      window.location.reload()
     }
 
 	  componentDidMount = () => {
       const config = {
         type: Phaser.AUTO,
+        dom: {
+          createContainer: true
+        },
         scale: {
             mode: Phaser.Scale.FIT,
             parent: 'phaser-example',
@@ -51,11 +54,6 @@ export default class Skull extends React.Component {
       game.scene.start("game", bruno)
     }
 
-    componentWillUnmount(){
-      this.state.game ? this.state.game.destroy(true, true) : null
-      this.state.socket ? this.state.socket.disconnect() : null
-      window.location.reload()
-    }
     render() {
             return (
                 <div>

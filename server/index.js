@@ -9,6 +9,7 @@ const { createNewGame, removeGame, getGame, addUserToGame, removeUserFromGame, g
 const PORT = process.env.PORT || 8000
 
 const bodyParser = require('body-parser')
+const { isObject } = require('util')
 const app = express()
 app.use(cors())
 app.use(bodyParser())
@@ -29,8 +30,9 @@ io.on('connection', socket =>{
         }
         let game = getGame(user.room)
         if(!game){
-            io.to(room).emit("error")
+            io.to(user.room).emit("error")
         }
+
         game.events.push({
             name: "selectbase",
             args: [user, color]
@@ -137,7 +139,17 @@ io.on('connection', socket =>{
         let user = getUser(socket.id)
         const game = getGame(user.room) 
         socket.emit("initgame", game, user)
-        io.to(user.room).emit("userjoined", user)
+        socket.broadcast.to(user.room).emit("userjoined", user)
+    })
+
+    socket.on("message", (name, message, color) => {
+        let user = getUser(socket.id)
+        if(!user){
+            console.log("not user lol")
+            return
+        }
+        console.log("sending message??")
+        socket.broadcast.to(user.room).emit("message",name,message, color)
     })
 
     socket.on("leavegame", () => {
@@ -145,9 +157,10 @@ io.on('connection', socket =>{
         if(!user){
             return
         }
-        let game = removeUserFromGame(user)
+        let game = removeUserFromGame(user.id)
         if(game.players.length === 0 || user.host){
-            removeGame(game)
+            console.log("removing game from leave", game.roomid)
+            removeGame(game.roomid)
         } else {
             game.events.push({name: "leavegame", args: [socket.id]})
         }
