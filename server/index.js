@@ -8,21 +8,20 @@ const { createNewGame, removeGame, getGame, addUserToGame, removeUserFromGame, g
 
 const PORT = process.env.PORT || 8000
 
+const origin = "https://skull-online-4793e.web.app/"
+
 const bodyParser = require('body-parser')
-const { isObject } = require('util')
 const app = express()
 app.use(cors())
-app.use(bodyParser())
+app.use(bodyParser.json())
 const server = http.createServer(app)
 const io = socketio(server, {
     cors: {
-        origin: "192.168.0.12:8080",
-        allowedHeaders: ['192.168.0.12:8080']
+        origin: origin 
     }
 })
 
 io.on('connection', socket =>{
-    console.log("Connection")
     
     socket.on('selectbase', (user, color) => {
         if(!user){
@@ -45,7 +44,7 @@ io.on('connection', socket =>{
         if(!game){
             io.to(room).emit("error")
         }
-        let first = Math.round(Math.random()*5)
+        let first = Math.round(Math.random()*users.filter(user => user.roomid === room).length)
         game.events.push({
             name: "startgame",
             args: [first]
@@ -126,7 +125,6 @@ io.on('connection', socket =>{
     })
 
     socket.on("resetgame", (room) => {
-        console.log("resetting")
         let game = getGame(room)
         if(!game){
             io.to(room).emit("error")
@@ -145,10 +143,8 @@ io.on('connection', socket =>{
     socket.on("message", (name, message, color) => {
         let user = getUser(socket.id)
         if(!user){
-            console.log("not user lol")
             return
         }
-        console.log("sending message??")
         socket.broadcast.to(user.room).emit("message",name,message, color)
     })
 
@@ -157,14 +153,13 @@ io.on('connection', socket =>{
         if(!user){
             return
         }
-        let game = removeUserFromGame(user.id)
+        let game = removeUserFromGame(user)
         if(game.players.length === 0 || user.host){
-            console.log("removing game from leave", game.roomid)
             removeGame(game.roomid)
         } else {
             game.events.push({name: "leavegame", args: [socket.id]})
         }
-        removeUser(socket.id)
+        removeUser(user.id)
 
         socket.leave(user.room)
         if(user.host && game.players.length > 0){
@@ -176,18 +171,15 @@ io.on('connection', socket =>{
     })
 
     socket.on('disconnect', () =>{
-        console.log("Disconnection")
         if(users.length === 0){
             return
         } 
         let user = removeUser(socket.id)
         if(!user){
-            console.log("not user")
             return
         }
         let game = removeUserFromGame(user)
         if(!game){
-            console.log("not game")
             return
         }
         if(!user.host){
@@ -195,7 +187,6 @@ io.on('connection', socket =>{
             game.events.push({name: "leavegame", args: [socket.id]})
         }
         if(game && user.host){
-            console.log("deleting game")
             removeGame(user.room)
             io.to(user.room).emit("error")
         }
@@ -206,7 +197,7 @@ const getRouter = () => {
     const router = express.Router()
 
     router.get('/', (req, res) =>{
-        res.send('server is up and running')
+        res.send('server is up and running' + origin)
     })
 
     router.get('/lobby', (req,res) => {
@@ -221,7 +212,6 @@ const getRouter = () => {
         let { username, name, password, hasPassword } = req.body
         const {gameError, game} = createNewGame({username, name, password, hasPassword, id: uuidv4()})
         if(gameError){
-            console.log("gameerror", gameError)
             socket.emit("createlobbyerror", gameError)
             return res.status(400).json({error: gameError})
         }
@@ -244,13 +234,14 @@ const getRouter = () => {
         }
         let { room, name, password } = req.body
         let game = getGame(room)
+        if(!game){
+            return res.status(400).json({error: "Could not find lobby."})
+        }
         if(game.hasPassword && game.password !== password){
             return res.status(401).json({error: "Incorrect password"})
         }
         const { userError, user } = addUser({id: socket.id, room, name, host: false})
-        console.log(user)
         if(userError){
-            console.log(userError)
             socket.emit("error")
             return res.status(400).json({error: userError})
         }
