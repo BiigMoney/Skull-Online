@@ -58,6 +58,7 @@ class playGame extends Phaser.Scene {
         let xy = x + 3*y
         bases[xy] = new Base(this).render(info.base.x[x], info.base.y[y], info.colors[xy] + "Base").setName(info.colors[xy]).on('pointerdown', function () {
           this.scene.socket.emit("selectbase", this.scene.me, this.name)
+          this.scene.selectBase(this.scene.me, this.name)
         }, this.bases[xy])
       }
     }
@@ -306,6 +307,7 @@ class playGame extends Phaser.Scene {
       }
     }
     this.socket.emit("chooseremove", card.obj.color, this.me.room)
+    this.chooseRemove(card.obj.color)
   }
 
   chooseRemove = (color) => {
@@ -359,6 +361,7 @@ class playGame extends Phaser.Scene {
           this.zone.disableInteractive()
           this.cards.forEach(card => card.isDisabled ? null : card.isDisabled = true)
           this.socket.emit("playerlost", this.color, this.me.room)
+          this.playerLost(this.color)
         } else {
           this.pickDisks()
         }
@@ -403,6 +406,7 @@ class playGame extends Phaser.Scene {
         //error sound or text or something
       } else {
         this.scene.socket.emit("flipcard", this.obj.color, this.scene.me.room)
+        this.scene.selectDownDisk(this.obj.color)
       }
     }, newCard)
     let num = info.colors.indexOf(gameObject.color)
@@ -549,6 +553,7 @@ class playGame extends Phaser.Scene {
     this.color = null 
     this.players = [null,null,null,null,null,null]
     this.socket.emit("selectbase", this.me, color)
+    this.selectBase(this.me, color)
   }
 
   displayChat = () => {
@@ -588,7 +593,10 @@ background.setScale(scale).setScrollFactor(0)
 
     this.createPlayerText()
 
-    this.leaveGame = new Button(this).render(1275,725,150,50,"Leave", function() {this.scene.socket.emit("leavegame", this.scene.me)})
+    this.leaveGame = new Button(this).render(1275,725,150,50,"Leave", function() {
+      this.scene.socket.emit("leavegame", this.scene.me)
+      this.scene.leaveGame(this.scene.me)
+    })
 
     this.bidUp = new Button(this).render(1300,400,40,40,"Add", function() {this.scene.faceDownCards.length > this.scene.currentBid? this.scene.bidNum.text.setText(++this.scene.currentBid) : null})
     this.bidUp.hide()
@@ -598,13 +606,21 @@ background.setScale(scale).setScrollFactor(0)
     this.bidDown.hide() 
     this.bidSubmit = new Button(this).render(1250,450,100,40,"Submit", function () {
       this.scene.socket.emit("bid", this.scene.color, this.scene.currentBid, this.scene.me.room)
+      this.scene.bid(this.scene.color, this.scene.currentBid)
     })
     this.bidSubmit.hide()
 
-    this.startGameText = new Button(this).render(975,600,150,50,"Start Game", function() {this.scene.socket.emit("initgame", this.scene.me.room)})
+    this.startGameText = new Button(this).render(975,600,150,50,"Start Game", function() {
+      this.scene.socket.emit("initgame", this.scene.me.room)
+      this.scene.startGameText.hide()
+      
+    })
     this.startGameText.hide()
 
-    this.foldText = new Button(this).render(1250,350,100,40,"Fold", function () {this.scene.socket.emit("fold", this.scene.color, this.scene.me.room)})
+    this.foldText = new Button(this).render(1250,350,100,40,"Fold", function () {
+      this.scene.socket.emit("fold", this.scene.color, this.scene.me.room)
+      this.scene.fold(this.scene.color)
+    })
     this.foldText.hide()
 
     this.biddingOBJs.push(this.bidUp)
@@ -612,7 +628,10 @@ background.setScale(scale).setScrollFactor(0)
     this.biddingOBJs.push(this.bidDown)
     this.biddingOBJs.push(this.bidSubmit)
 
-    this.resetButton = new Button(this).render(975,600,150,50,"Reset Game", function() {this.scene.socket.emit("resetgame", this.scene.me.room)})
+    this.resetButton = new Button(this).render(975,600,150,50,"Reset Game", function() {
+      this.scene.socket.emit("resetgame", this.scene.me.room)
+      this.scene.resetButton.hide()
+    })
     this.resetButton.hide()
 
     this.bases = []
@@ -640,6 +659,7 @@ background.setScale(scale).setScrollFactor(0)
         gameObject.disableInteractive()
         gameObject.visible = false
         gameObject.scene.socket.emit("playcard", gameObject.scene.me.room, gameObject.obj)
+        gameObject.scene.playCard(gameObject.obj)
 
 
       }

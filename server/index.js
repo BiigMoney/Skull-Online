@@ -36,7 +36,7 @@ io.on('connection', socket =>{
             name: "selectbase",
             args: [user, color]
         })
-        io.to(user.room).emit("userplaying", user, color)
+        socket.broadcast.to(user.room).emit("userplaying", user, color)
     })
 
     socket.on('initgame', (room) => {
@@ -61,7 +61,7 @@ io.on('connection', socket =>{
             name: "playcard",
             args: [card]
         })
-        io.to(room).emit("playcard", card)
+        socket.broadcast.to(user.room).emit("playcard", card)
     })
 
     socket.on('bid', (color, bid, room) => {
@@ -73,7 +73,7 @@ io.on('connection', socket =>{
             name: "bid",
             args: [color, bid]
         })
-        io.to(room).emit("bid", color, bid)
+        socket.broadcast.to(user.room).emit("bid", color, bid)
     })
 
     socket.on('flipcard', (color, room) => {
@@ -85,7 +85,7 @@ io.on('connection', socket =>{
             name: "flipcard",
             args: [color]
         })
-        io.to(room).emit("flipcard", color)
+        socket.broadcast.to(user.room).emit("flipcard", color)
     })
 
     socket.on('fold', (color, room) => {
@@ -97,7 +97,7 @@ io.on('connection', socket =>{
             name: "fold",
             args: [color]
         })
-        io.to(room).emit("fold", color)
+        socket.broadcast.to(user.room).emit("fold", color)
     })
 
     socket.on("chooseremove", (color, room) => {
@@ -109,7 +109,7 @@ io.on('connection', socket =>{
             name: "chooseremove",
             args: [color]
         })
-        io.to(room).emit("chooseremove", color)
+        socket.broadcast.to(user.room).emit("chooseremove", color)
     })
 
     socket.on("playerlost", (color, room) => {
@@ -121,7 +121,7 @@ io.on('connection', socket =>{
             name: "playerlost",
             args: [color]
         })
-        io.to(room).emit("playerlost", color)
+        socket.broadcast.to(user.room).emit("playerlost", color)
     })
 
     socket.on("resetgame", (room) => {
@@ -165,7 +165,7 @@ io.on('connection', socket =>{
         if(user.host && game.players.length > 0){
             io.to(user.room).emit("error", "Host has closed the lobby.")
         } else {
-            io.to(user.room).emit("leavegame", socket.id)
+            socket.broadcast.to(user.room).emit("leavegame", socket.id)
         }
         socket.emit("leave")
     })
