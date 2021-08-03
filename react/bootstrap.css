@@ -1886,7 +1886,6 @@ progress {
 
 .table {
   --bs-table-bg: transparent;
-  --bs-table-accent-bg: #303030;
   --bs-table-striped-color: #fff;
   --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
   --bs-table-active-color: #fff;

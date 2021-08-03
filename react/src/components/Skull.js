@@ -26,6 +26,7 @@ export default class Skull extends React.Component {
           createContainer: true
         },
         scale: {
+            autoCenter: Phaser.Scale.CENTER_BOTH,
             mode: Phaser.Scale.FIT,
             parent: 'phaser-example',
             width: 1400,
@@ -52,6 +53,10 @@ export default class Skull extends React.Component {
         name: player.name
       }
       game.scene.start("game", bruno)
+    }
+
+    componentWillUnmount() {
+      this.leaveGame()
     }
 
     render() {

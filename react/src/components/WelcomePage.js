@@ -1,5 +1,5 @@
 import React from "react";
-import background from "../assets/table.JPG"
+import background from "../assets/table.jpg"
 
 export default class WelcomePage extends React.Component {
 
@@ -36,7 +36,7 @@ export default class WelcomePage extends React.Component {
 
 	render() {
 		return (
-			<div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0}}>
+			<div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0 }}>
 				<h1 style={{marginTop: 30}}>Welcome to Skull Online!</h1>
 				<h3>Enter your name to get started.</h3>
 				<div className="form-center">

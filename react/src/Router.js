@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import background from "./assets/table.jpg"
 import {BrowserRouter, Switch, Route} from "react-router-dom"
 import Lobby from './components/Lobby'
 import WelcomePage from './components/WelcomePage'
@@ -8,25 +9,27 @@ import "bootstrap/js/src/collapse.js"
 import "../bootstrap.css"
 import "../extra.css"
 import socketio from 'socket.io-client'
+import axios from 'axios'
 
-
+axios.defaults.baseURL = "https://rocky-savannah-29000.herokuapp.com"
+console.log(axios.defaults.baseURL)
 const Router = () =>{
     const [socket, setSocket] = useState(null)
     const [error, setError] = useState(null)
     useEffect(() => {
-        try {
-        const sock = socketio("192.168.0.12:8000", {transports: ['websocket']})
+        const sock = socketio("https://rocky-savannah-29000.herokuapp.com", {transports: ['websocket']})
         sock.on("connect", () => {
             setSocket(sock)
         })
+        sock.on('connect_error', (error) => {
+            console.error(error.message)
+            setError("Error connecting to socket, please try again later.")
+            sock.disconnect()
+        })
         
-        } catch(err){
-            console.error(err)
-            setError("error")
-        }
     }, [])
     return (
-        <div>
+        <div >
         { socket ? ( 
         <BrowserRouter>
         <Switch>
@@ -36,11 +39,12 @@ const Router = () =>{
         </Switch>
         </BrowserRouter>
         ) : error ? (
-            <div><p>Error lol</p></div>
+            <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0, fontSize: 40, textAlign: "center"}}><p style={{marginTop: 50}}>{error}</p></div>
         ) : (
-            <div><p>Loading lol</p></div>
+            <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%",  height: "100%", position: "absolute", top: 0, left: 0, fontSize: 40, textAlign: "center"}}><p style={{marginTop: 50}}>Loading...</p></div>
         )
         }
+		<div id="phaser"></div>
         </div>
     )
 }

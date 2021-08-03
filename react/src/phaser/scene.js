@@ -12,44 +12,43 @@ class playGame extends Phaser.Scene {
   }
 
   preload() {
-    this.load.html("chat", "src/helpers/chat.html")
-    this.load.image('blueBase', 'src/assets/Blue/Base.png');
-    this.load.image('blueBaseW', 'src/assets/Blue/BaseW.png');
-    this.load.image('blueDisc', 'src/assets/Blue/Disc.png');
-    this.load.image('blueFlower', 'src/assets/Blue/Flower.png');
-    this.load.image('blueSkull', 'src/assets/Blue/Skull.png');
+    this.load.image('blueBase', require('../assets/Blue/Base.png').default);
+    this.load.image('blueBaseW', require('../assets/Blue/BaseW.png').default);
+    this.load.image('blueDisc', require('../assets/Blue/Disc.png').default);
+    this.load.image('blueFlower', require('../assets/Blue/Flower.png').default);
+    this.load.image('blueSkull', require('../assets/Blue/Skull.png').default);
 
-    this.load.image('greenBase', 'src/assets/Green/Base.png');
-    this.load.image('greenBaseW', 'src/assets/Green/BaseW.png');
-    this.load.image('greenDisc', 'src/assets/Green/Disc.png');
-    this.load.image('greenFlower', 'src/assets/Green/Flower.png');
-    this.load.image('greenSkull', 'src/assets/Green/Skull.png');
+    this.load.image('greenBase', require('../assets/Green/Base.png').default);
+    this.load.image('greenBaseW', require('../assets/Green/BaseW.png').default);
+    this.load.image('greenDisc', require('../assets/Green/Disc.png').default);
+    this.load.image('greenFlower', require('../assets/Green/Flower.png').default);
+    this.load.image('greenSkull', require('../assets/Green/Skull.png').default);
 
-    this.load.image('pinkBase', 'src/assets/Pink/Base.png');
-    this.load.image('pinkBaseW', 'src/assets/Pink/BaseW.png');
-    this.load.image('pinkDisc', 'src/assets/Pink/Disc.png');
-    this.load.image('pinkFlower', 'src/assets/Pink/Flower.png');
-    this.load.image('pinkSkull', 'src/assets/Pink/Skull.png');
+    this.load.image('pinkBase', require('../assets/Pink/Base.png').default);
+    this.load.image('pinkBaseW', require('../assets/Pink/BaseW.png').default);
+    this.load.image('pinkDisc', require('../assets/Pink/Disc.png').default);
+    this.load.image('pinkFlower', require('../assets/Pink/Flower.png').default);
+    this.load.image('pinkSkull', require('../assets/Pink/Skull.png').default);
 
-    this.load.image('purpleBase', 'src/assets/Purple/Base.png');
-    this.load.image('purpleBaseW', 'src/assets/Purple/BaseW.png');
-    this.load.image('purpleDisc', 'src/assets/Purple/Disc.png');
-    this.load.image('purpleFlower', 'src/assets/Purple/Flower.png');
-    this.load.image('purpleSkull', 'src/assets/Purple/Skull.png');
+    this.load.image('purpleBase', require('../assets/Purple/Base.png').default);
+    this.load.image('purpleBaseW', require('../assets/Purple/BaseW.png').default);
+    this.load.image('purpleDisc', require('../assets/Purple/Disc.png').default);
+    this.load.image('purpleFlower', require('../assets/Purple/Flower.png').default);
+    this.load.image('purpleSkull', require('../assets/Purple/Skull.png').default);
       
-    this.load.image('redBase', 'src/assets/Red/Base.png');
-    this.load.image('redBaseW', 'src/assets/Red/BaseW.png');
-    this.load.image('redDisc', 'src/assets/Red/Disc.png');
-    this.load.image('redFlower', 'src/assets/Red/Flower.png');
-    this.load.image('redSkull', 'src/assets/Red/Skull.png');
+    this.load.image('redBase', require('../assets/Red/Base.png').default);
+    this.load.image('redBaseW', require('../assets/Red/BaseW.png').default);
+    this.load.image('redDisc', require('../assets/Red/Disc.png').default);
+    this.load.image('redFlower', require('../assets/Red/Flower.png').default);
+    this.load.image('redSkull', require('../assets/Red/Skull.png').default);
       
-    this.load.image('yellowBase', 'src/assets/Yellow/Base.png');
-    this.load.image('yellowBaseW', 'src/assets/Yellow/BaseW.png');
-    this.load.image('yellowDisc', 'src/assets/Yellow/Disc.png');
-    this.load.image('yellowFlower', 'src/assets/Yellow/Flower.png');
-    this.load.image('yellowSkull', 'src/assets/Yellow/Skull.png');
+    this.load.image('yellowBase', require('../assets/Yellow/Base.png').default);
+    this.load.image('yellowBaseW', require('../assets/Yellow/BaseW.png').default);
+    this.load.image('yellowDisc', require('../assets/Yellow/Disc.png').default);
+    this.load.image('yellowFlower', require('../assets/Yellow/Flower.png').default);
+    this.load.image('yellowSkull', require('../assets/Yellow/Skull.png').default);
       
-    this.load.image("backdrop", 'src/assets/962592.jpg'); 
+    this.load.image("backdrop", require('../assets/962592.jpg').default); 
   }
 
   createBases = (bases) => {
@@ -112,7 +111,6 @@ class playGame extends Phaser.Scene {
     this.flipped = 0
     this.bidNum.text.setText(1)
     this.biddingOBJs.forEach(obj => {
-      console.log(obj)
       obj.hide()
     })
     this.players.forEach(player => player ? player.isFolded = false : null)
@@ -148,7 +146,6 @@ class playGame extends Phaser.Scene {
   }
 
   selectBase = (user, color) => {
-    console.log("selecting base")
     user.folded = false 
     user.hasLost = false 
     user.isPlaying = true
@@ -158,17 +155,13 @@ class playGame extends Phaser.Scene {
     let y = Math.floor(num/3)
     this.bases[num].visible = false 
     this.bases[num].disableInteractive()
-    console.log(user.name)
     this.playerText[x+(3*y)].setText(user.name).setColor(info.hexColors[x+(3*y)]).visible = true
-    console.log(this)
     if(user.id === this.me.id){
       this.me.isPlaying = true 
       this.me.isFolded = false 
       this.me.hasLost = false
       this.color = color 
-      console.log("1")
       this.zone = this.add.zone(info.base.x[x], info.base.y[y], 0, 0).setCircleDropZone(info.base.r)
-      console.log("2")
       this.zone.disableInteractive()
       this.setBasesInteractive(this.bases, false)
       this.text.setText("You are playing as " + color)
@@ -189,13 +182,22 @@ class playGame extends Phaser.Scene {
     return count
   }
 
+  getNumberOfActivePlayers = () => {
+    let count = 0
+    this.players.forEach(player => {
+      if(player && !player.hasLost){
+        count++
+      }
+    })
+    return count
+  }
+
 
   setTurn = (color) => {
     let num = info.colors.indexOf(color)
     let x = num >= 3 ? num-3 : num
     let y = Math.floor(num/3)
     this.outline.clear()
-    console.log(info.heXColors[num])
     this.outline.lineStyle(8, info.heXColors[num]).strokeRect(info.base.x[x] - 149/2, info.base.y[y] - 148/2, 149, 148)
     this.turn = color
     if(this.turn == this.color){
@@ -204,11 +206,9 @@ class playGame extends Phaser.Scene {
           obj.display()
         })
       }
-      console.log(this.bidding)
       this.bidding ? this.foldText.display() : this.zone.setInteractive()
       if(this.bidding && (this.bidder === color)){
         this.text.setText(color + " has to flip " + this.highestBid + " to win the turn.").visible = true
-        console.log("flipping")
         this.flipping = true
         this.faceDownCards.forEach(card => card.setInteractive())
         this.biddingOBJs.forEach(obj => {
@@ -220,7 +220,6 @@ class playGame extends Phaser.Scene {
     else{
       if(this.bidding && this.bidder === color){
         this.text.setText(color + " has to flip " + this.highestBid + " to win the turn.").visible = true
-        console.log("flipping")
         this.flipping = true
         this.foldText.hide()
       }
@@ -283,13 +282,13 @@ class playGame extends Phaser.Scene {
           continue
         }
         if(this.onlyLeft(currentNum)){
+          this.outline.clear()
           this.text.setText(`${info.colors[currentNum]} wins!`).visible = true
           if(this.color === info.colors[currentNum]){ 
             this.resetButton.display()
           }
           this.turn = "" 
         } else {
-          console.log(this.players[currentNum])
           this.setTurn(info.colors[currentNum])
         }
         break
@@ -310,7 +309,6 @@ class playGame extends Phaser.Scene {
   }
 
   chooseRemove = (color) => {
-    console.log(color + " has removed a card.")
     this.resetCards()
     this.setTurn(color)
 
@@ -357,7 +355,6 @@ class playGame extends Phaser.Scene {
     if(disk.obj.flipped && disk.obj.type == "Skull"){
       if(this.turn === this.color){
         if(this.getNumberOfDisks() === 1){
-          console.log("should have lost")
           this.bases[info.colors.indexOf(this.color)].disableInteractive()
           this.zone.disableInteractive()
           this.cards.forEach(card => card.isDisabled ? null : card.isDisabled = true)
@@ -386,18 +383,16 @@ class playGame extends Phaser.Scene {
   }
 
   startGame = (first) => {
-    console.log("start game")
     this.bases.forEach(base => {
       base.visible ? base.visible = false : base.visible = true
     })
     this.text.visible = false 
     this.startGameText ? this.startGameText.hide() : null
-    console.log("past hide")
     if(this.color){
       this.createCards(this.color)
       this.resetCards(this.color)
     }
-    this.setNextTurn(info.colors[first])
+    this.setNextTurn(info.colors[this.players.indexOf(this.players.filter(player => player !== null)[first])])
   }
 
   playCard = (gameObject) => {
@@ -449,7 +444,6 @@ class playGame extends Phaser.Scene {
     this.players[info.colors.indexOf(color)].hasLost = true
     this.text.setText(color + " has lost!").visible = true
     this.resetCards()
-    console.log("player lost, setting next turn to " + color)
     this.setNextTurn(color)
   }
 
@@ -463,12 +457,25 @@ class playGame extends Phaser.Scene {
     this.players[idx] = null 
     if(this.turn){
       this.bases[idx].visible = false
+      this.faceDownCards.forEach(card => card.obj.color === color ? card.destroy() : null)
+      for(let i = 0; i < 6; i++){
+        if(this.onlyLeft(i)){
+          this.biddingOBJs.forEach(obj => obj.hide())
+          this.foldText.hide()
+          this.outline.clear()
+          this.text.setText(`${info.colors[i]} wins!`).visible = true
+          if(this.color === info.colors[i]){ 
+            this.resetButton.display()
+          }
+          this.turn = "" 
+          return
+        }
+      }
       if(this.turn === color){
         this.setNextTurn(color)
       }
     } else {
       this.bases[idx].setInteractive().visible = true
-      console.log(this.getNumberOfPlayers(this.players))
       if(this.getNumberOfPlayers(this.players) === 1){
         this.startGameText.hide()
       } 
@@ -478,20 +485,17 @@ class playGame extends Phaser.Scene {
   setUpSocket = (socket) => {
     let self = this
     socket.on("userjoined", (user) => {
-      console.log(user.name + " has joined the room")
       //add player to lobby ?
+      this.wall.append(this.createMessage("-- ", `${user.name} has joined the game! : --`, "#888888"))
     })
     socket.on("message", (name, message, color) => {
-      console.log("receiving message")
       this.wall.append(this.createMessage(name, message, color))
     })
     socket.on("userplaying", self.selectBase)
     socket.on("initgame", (game, user) => {
       //set up players, makes objects visible, loop through events
-      console.log("initgame", game, user)
       self.me = user
       game.events.forEach(event => {
-        console.log(event)
         self.functionMap[event.name](...event.args)
       })
     })
@@ -511,6 +515,7 @@ class playGame extends Phaser.Scene {
   }
 
   resetGame = () => {
+    this.outline.clear()
     for(let y = 0; y < 2; y++){
       for(let x = 0; x < 3; x++){
         let xy = x + 3*y
@@ -558,14 +563,12 @@ class playGame extends Phaser.Scene {
   }
 
   createMessage = (name, text, color) => {
-    console.log(color)
     let div = document.createElement("div")
     div.innerHTML = `<p style="color: #888888;"><span style="color: ${color};">${name}</span>: ${text}</p>`
     return div
   }
 
   create(data) {
-    console.log(data)
     this.socket = data.socket 
     this.users = []
     this.setUpSocket(this.socket) 
@@ -645,8 +648,15 @@ background.setScale(scale).setScrollFactor(0)
     this.wall = document.createElement("div")
     this.wall.style = "background-color: #31313CDD; width: 250px; height: 645px; overflow-y: auto; padding: 10px; overflow-wrap: break-word;"
 
+    this.chat = document.createElement("input")
+    this.chat.style = "padding: 10px; font-size: 20px; width: 250px;"
+    this.chat.setAttribute("type", "text")
+    this.chat.setAttribute("name", "chat")
+    this.chat.setAttribute("placeholder", "Chat Message")
+    this.chat.setAttribute("autocomplete", "off")
+
     this.chatWindow = {
-      chat: this.add.dom(1050,655).createFromCache("chat").setOrigin(0,0), 
+      chat: this.add.dom(1050,655, this.chat).setOrigin(0,0), 
       wall: this.add.dom(1050,10, this.wall).setOrigin(0,0),
       displayed: true
     }

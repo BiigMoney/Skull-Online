@@ -1,10 +1,19 @@
-.tableSelect {
-	background-color: antiquewhite;
-	color:black;
+.tableSelect > th {
+    background-color: grey !important;
+    color:black;
+}
+
+th {
+    background-color: #303030;
+}
+
+.navbar {
+    background: none;
+    background-color: transparent;
 }
 
 .table-fixed tbody {
-    height: 400px;
+    height: 35vh;
     overflow-y: auto;
     width: 100%;
 }
