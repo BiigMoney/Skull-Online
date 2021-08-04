@@ -44,7 +44,7 @@ io.on('connection', socket =>{
         if(!game){
             io.to(room).emit("error")
         }
-        let first = Math.round(Math.random()*users.filter(user => user.roomid === room).length)
+        let first = Math.round(Math.random()*getUsersInRoom(room).length)
         game.events.push({
             name: "startgame",
             args: [first]
@@ -61,7 +61,7 @@ io.on('connection', socket =>{
             name: "playcard",
             args: [card]
         })
-        socket.broadcast.to(user.room).emit("playcard", card)
+        socket.broadcast.to(room).emit("playcard", card)
     })
 
     socket.on('bid', (color, bid, room) => {
@@ -73,7 +73,7 @@ io.on('connection', socket =>{
             name: "bid",
             args: [color, bid]
         })
-        socket.broadcast.to(user.room).emit("bid", color, bid)
+        socket.broadcast.to(room).emit("bid", color, bid)
     })
 
     socket.on('flipcard', (color, room) => {
@@ -85,7 +85,7 @@ io.on('connection', socket =>{
             name: "flipcard",
             args: [color]
         })
-        socket.broadcast.to(user.room).emit("flipcard", color)
+        socket.broadcast.to(room).emit("flipcard", color)
     })
 
     socket.on('fold', (color, room) => {
@@ -97,7 +97,7 @@ io.on('connection', socket =>{
             name: "fold",
             args: [color]
         })
-        socket.broadcast.to(user.room).emit("fold", color)
+        socket.broadcast.to(room).emit("fold", color)
     })
 
     socket.on("chooseremove", (color, room) => {
@@ -109,7 +109,7 @@ io.on('connection', socket =>{
             name: "chooseremove",
             args: [color]
         })
-        socket.broadcast.to(user.room).emit("chooseremove", color)
+        socket.broadcast.to(room).emit("chooseremove", color)
     })
 
     socket.on("playerlost", (color, room) => {
@@ -121,7 +121,7 @@ io.on('connection', socket =>{
             name: "playerlost",
             args: [color]
         })
-        socket.broadcast.to(user.room).emit("playerlost", color)
+        socket.broadcast.to(room).emit("playerlost", color)
     })
 
     socket.on("resetgame", (room) => {

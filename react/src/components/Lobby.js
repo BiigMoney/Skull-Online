@@ -339,7 +339,7 @@ export default class Lobby extends React.Component {
                         </tbody>
                     </table>
                 </div>
-                    <button id="joinButton" style={{position: "absolute", bottom: "8%", margin: "auto"}} type="button" className="btn btn-outline-primary"  disabled >Join</button>
+                    <button id="joinButton" style={{position: "absolute", bottom: "8%", width: "60px", marginLeft: "-30px", left: "50%"}} type="button" className="btn btn-outline-primary"  disabled >Join</button>
                 {this.state.joinError ? <p style={{color: "red"}}>{this.state.joinError}</p> : <React.Fragment/> }
                             </div>
                             </div>

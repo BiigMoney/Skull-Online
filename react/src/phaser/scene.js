@@ -222,11 +222,11 @@ class playGame extends Phaser.Scene {
       if(this.bidding && this.bidder === color){
         this.text.setText(color + " has to flip " + this.highestBid + " to win the turn.").visible = true
         this.flipping = true
-        this.foldText.hide()
       }
       this.biddingOBJs.forEach(obj => {
         obj.hide()
       })
+      this.foldText.hide()
       this.zone ? this.zone.disableInteractive() : null
     }
   }
@@ -311,6 +311,7 @@ class playGame extends Phaser.Scene {
   }
 
   chooseRemove = (color) => {
+    this.playerText[info.colors.indexOf(color)].setText(`${parseInt(this.playerText[info.colors.indexOf(color)].text) - 1}`)
     this.resetCards()
     this.setTurn(color)
 
@@ -389,6 +390,9 @@ class playGame extends Phaser.Scene {
     this.bases.forEach(base => {
       base.visible ? base.visible = false : base.visible = true
     })
+    for(let i = 0; i < 6; i++){
+      this.playerText[i].setColor("0x000000").setText("4").y += i < 3 ? -85 : 85
+    }
     this.text.visible = false 
     this.startGameText ? this.startGameText.hide() : null
     if(this.color){
@@ -412,7 +416,7 @@ class playGame extends Phaser.Scene {
     let num = info.colors.indexOf(gameObject.color)
     let x = num >= 3 ? num-3 : num
     let y = Math.floor(num/3)
-    newCard.x = info.base.x[x]
+    newCard.x = info.base.x[x] + info.downs[this.faceDownCards.filter(card => card.obj.color === gameObject.color).length]
     newCard.y = info.base.y[y]
     this.faceDownCards.push(newCard)
     this.setNextTurn(this.turn)
@@ -527,6 +531,7 @@ class playGame extends Phaser.Scene {
         this.bases[xy].y = info.base.y[y]
         this.bases[xy].obj.flipped ? this.bases[xy].obj.flip() : null
         this.color ? this.bases[xy].disableInteractive().visible = true : this.bases[xy].setInteractive().visible = true 
+        this.players[xy] ? this.playerText[xy].setColor(info.hexColors[xy]).setText(this.players[xy].name).y += y === 0 ? 75 : -75 : null
       }
     }
     this.cards.forEach(card => card.destroy())
@@ -598,11 +603,11 @@ background.setScale(scale).setScrollFactor(0)
       this.scene.leaveGame(this.scene.me)
     })
 
-    this.bidUp = new Button(this).render(1300,400,40,40,"Add", function() {this.scene.faceDownCards.length > this.scene.currentBid? this.scene.bidNum.text.setText(++this.scene.currentBid) : null})
+    this.bidUp = new Button(this).render(1300,400,20,20,"+", function() {this.scene.faceDownCards.length > this.scene.currentBid? this.scene.bidNum.text.setText(++this.scene.currentBid) : null})
     this.bidUp.hide()
     this.bidNum = new Button(this).render(1250,400,40,40,"1",() => {})
     this.bidNum.hide()
-    this.bidDown = new Button(this).render(1200,400,40,40,"Sub", function () {this.scene.currentBid > 1 && this.scene.currentBid > this.scene.highestBid+1 ? this.scene.bidNum.text.setText(--this.scene.currentBid) : null})
+    this.bidDown = new Button(this).render(1200,400,20,20,"-", function () {this.scene.currentBid > 1 && this.scene.currentBid > this.scene.highestBid+1 ? this.scene.bidNum.text.setText(--this.scene.currentBid) : null})
     this.bidDown.hide() 
     this.bidSubmit = new Button(this).render(1250,450,100,40,"Submit", function () {
       this.scene.socket.emit("bid", this.scene.color, this.scene.currentBid, this.scene.me.room)

@@ -11,14 +11,14 @@ import "../extra.css"
 import socketio from 'socket.io-client'
 import axios from 'axios'
 
-//axios.defaults.baseURL = "https://rocky-savannah-29000.herokuapp.com"
-axios.defaults.baseURL = "http://localhost:8000"
+axios.defaults.baseURL = "https://rocky-savannah-29000.herokuapp.com"
+//axios.defaults.baseURL = "http://localhost:8000"
 const Router = () =>{
     const [socket, setSocket] = useState(null)
     const [error, setError] = useState(null)
     useEffect(() => {
-        //const sock = socketio("https://rocky-savannah-29000.herokuapp.com", {transports: ['websocket']})
-        const sock = socketio("http://localhost:8000", {transports: ['websocket']})
+        const sock = socketio("https://rocky-savannah-29000.herokuapp.com", {transports: ['websocket']})
+        //const sock = socketio("http://localhost:8000", {transports: ['websocket']})
         sock.on("connect", () => {
             setSocket(sock)
         })
