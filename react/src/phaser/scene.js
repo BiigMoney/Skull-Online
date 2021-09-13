@@ -223,7 +223,7 @@ class playGame extends Phaser.Scene {
       }
       this.bidding ? this.foldText.display() : this.zone.setInteractive()
       if (this.bidding && this.bidder === color) {
-        this.text.setText(color + " has to flip " + this.highestBid + " to win the turn.").visible = true
+        this.text.setText(this.players[info.colors.indexOf(color)].name + " has to flip " + this.highestBid + " to win the turn.").visible = true
         this.flipping = true
         this.faceDownCards.forEach(card => card.setInteractive())
         this.biddingOBJs.forEach(obj => {
@@ -233,7 +233,7 @@ class playGame extends Phaser.Scene {
       }
     } else {
       if (this.bidding && this.bidder === color) {
-        this.text.setText(color + " has to flip " + this.highestBid + " to win the turn.").visible = true
+        this.text.setText(this.players[info.colors.indexOf(color)].name + " has to flip " + this.highestBid + " to win the turn.").visible = true
         this.flipping = true
       }
       this.biddingOBJs.forEach(obj => {
@@ -297,7 +297,7 @@ class playGame extends Phaser.Scene {
         }
         if (this.onlyLeft(currentNum)) {
           this.outline.clear()
-          this.text.setText(`${info.colors[currentNum]} wins!`).visible = true
+          this.text.setText(`${this.players[currentNum].name} wins!`).visible = true
           if (this.color === info.colors[currentNum]) {
             this.resetButton.display()
           }
@@ -373,6 +373,7 @@ class playGame extends Phaser.Scene {
     this.children.bringToTop(disk)
     this.flipped++
     if (disk.obj.flipped && disk.obj.type == "Skull") {
+      this.faceDownCards.forEach(card => card.disableInteractive())
       if (this.turn === this.color) {
         if (this.getNumberOfDisks() === 1) {
           this.bases[info.colors.indexOf(this.color)].disableInteractive()
@@ -384,7 +385,7 @@ class playGame extends Phaser.Scene {
           this.pickDisks()
         }
       } else {
-        this.text.setText(this.turn + " is choosing a card to get rid of.").visible = true
+        this.text.setText(this.players[info.colors.indexOf(this.turn)].name + " is choosing a card to get rid of.").visible = true
       }
     } else {
       if (this.flipped == this.highestBid) {
@@ -409,6 +410,7 @@ class playGame extends Phaser.Scene {
     })
     for (let i = 0; i < 6; i++) {
       this.playerText[i].setColor("0x000000").setText("4").y += i < 3 ? -85 : 85
+      this.playerText[i].visible = true
     }
     this.text.visible = false
     this.startGameText ? this.startGameText.hide() : null
@@ -475,7 +477,6 @@ class playGame extends Phaser.Scene {
   playerLost = color => {
     this.bases[info.colors.indexOf(color)].visible = false
     this.players[info.colors.indexOf(color)].hasLost = true
-    this.text.setText(color + " has lost!").visible = true
     this.resetCards()
     this.setNextTurn(color)
   }
@@ -625,7 +626,6 @@ class playGame extends Phaser.Scene {
   create(data) {
     this.unreadMessages = 0
     this.socket = data.socket
-    this.users = []
     this.setUpSocket(this.socket)
     this.socket.emit("join")
     this.players = [null, null, null, null, null, null]

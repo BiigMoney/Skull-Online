@@ -1,4 +1,4 @@
-import React from "react"
+import React, {Fragment} from "react"
 import axios from "axios"
 import $ from "jquery"
 import background from "../assets/table.jpg"
@@ -264,16 +264,24 @@ export default class Lobby extends React.Component {
       <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%", height: "100%", position: "absolute", top: 0, left: 0}}>
         {!this.state.isLoading ? (
           <div>
-            <div style={{marginTop: 50}}>
-              <button style={{marginLeft: 100, marginRight: 100, width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 1})} aria-pressed="false" autoComplete="off">
-                Create Lobby
-              </button>
-              <button style={{marginLeft: 100, marginRight: 100, width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 2})} aria-pressed="false" autoComplete="off">
-                Join Lobby
-              </button>
-              <button style={{marginLeft: 100, marginRight: 100, width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 0})} aria-pressed="false" autoComplete="off">
-                About
-              </button>
+            <div className="row" style={{marginTop: 50}}>
+              <div className="col" />
+              <div className="col-3">
+                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 1})} aria-pressed="false" autoComplete="off">
+                  Create Lobby
+                </button>
+              </div>
+              <div className="col-3">
+                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 2})} aria-pressed="false" autoComplete="off">
+                  Join Lobby
+                </button>
+              </div>
+              <div className="col-3">
+                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 0})} aria-pressed="false" autoComplete="off">
+                  About
+                </button>
+              </div>
+              <div className="col" />
             </div>
             {this.state.scene === 0 ? (
               <div style={{backgroundColor: "#00000060", position: "absolute", top: "50vh", left: "50vw", marginTop: "-20vh", marginLeft: "-30vw", width: "60vw", height: "40vh", border: "3px solid #000", display: "block"}}>
