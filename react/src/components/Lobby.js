@@ -261,23 +261,23 @@ export default class Lobby extends React.Component {
 
   render() {
     return (
-      <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%", height: "100%", position: "absolute", top: 0, left: 0}}>
+      <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100vw", height: "100vh", position: "absolute", top: 0, left: 0, overflow: "hidden"}}>
         {!this.state.isLoading ? (
-          <div>
-            <div className="row" style={{marginTop: 50}}>
+          <Fragment>
+            <div className="row" style={{height: "10%"}}>
               <div className="col" />
-              <div className="col-3">
-                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 1})} aria-pressed="false" autoComplete="off">
+              <div className="col-3" style={{position: "relative"}}>
+                <button style={{width: "100%", maxWidth: 150, bottom: 0, position: "absolute", left: "50%", marginLeft: "-75px"}} className="btn btn-secondary" onClick={() => this.setState({scene: 1})} aria-pressed="false" autoComplete="off">
                   Create Lobby
                 </button>
               </div>
-              <div className="col-3">
-                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 2})} aria-pressed="false" autoComplete="off">
+              <div className="col-3" style={{bottom: 0}}>
+                <button style={{width: "100%", maxWidth: 150, bottom: 0, position: "absolute", left: "50%", marginLeft: "-75px"}} className="btn btn-secondary" onClick={() => this.setState({scene: 2})} aria-pressed="false" autoComplete="off">
                   Join Lobby
                 </button>
               </div>
               <div className="col-3">
-                <button style={{width: 150}} className="btn btn-secondary" onClick={() => this.setState({scene: 0})} aria-pressed="false" autoComplete="off">
+                <button style={{width: "100%", maxWidth: 150, bottom: 0, position: "absolute", left: "50%", marginLeft: "-75px"}} className="btn btn-secondary" onClick={() => this.setState({scene: 0})} aria-pressed="false" autoComplete="off">
                   About
                 </button>
               </div>
@@ -323,7 +323,7 @@ export default class Lobby extends React.Component {
                 </form>
               </div>
             ) : (
-              <div>
+              <Fragment>
                 {this.state.allLobbies.length === -1 ? (
                   <React.Fragment>
                     <p style={{marginTop: 20, fontSize: 30}}>There are no active lobbies.</p>
@@ -335,12 +335,12 @@ export default class Lobby extends React.Component {
                     </button>
                   </React.Fragment>
                 ) : (
-                  <div>
-                    <div style={{backgroundColor: "#00000060", position: "absolute", top: "50vh", left: "50vw", marginTop: "-30vh", marginLeft: "-30vw", width: "60vw", height: "60vh", border: "3px solid #000"}}>
+                  <div class="container d-flex justify-content-center" style={{height: "80%", flexGrow: 1}}>
+                    <div class="my-auto" style={{backgroundColor: "#00000060", width: "60vw", height: "60vh", border: "3px solid #000", minHeight: 500, minWidth: 500, position: "relative"}}>
                       <div>
                         <nav class="navbar navbar-expand-xs" style={{background: "none", backgroundColor: "transparent"}}>
                           <div className="input-group mb-3" style={{margin: "auto"}}>
-                            <ul className="navbar-nav ml-auto" style={{paddingLeft: 25}}>
+                            <ul className="navbar-nav ml-auto" style={{marginLeft: 25}}>
                               <li>
                                 <p className="navbar-brand" style={{margin: "auto"}}>
                                   Lobby Browser
@@ -402,7 +402,7 @@ export default class Lobby extends React.Component {
                     </div>
                   </div>
                 )}
-              </div>
+              </Fragment>
             )}
             <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModalCenter" hidden="hidden" id="hiddenModalButton">
               lol
@@ -416,9 +416,11 @@ export default class Lobby extends React.Component {
                       Password
                     </h5>
                   </div>
-                  <div class="modal-body">
-                    <input type="text" autoComplete="off" className="form-control" id="passwordInput" />
-                  </div>
+                  <form onSubmit={this.joinLobbyPassword}>
+                    <div class="modal-body">
+                      <input type="text" autoComplete="off" className="form-control" id="passwordInput" />
+                    </div>
+                  </form>
                   <div class="modal-footer">
                     {this.state.joinPasswordError ? <p style={{color: "red"}}>{this.state.joinPasswordError}</p> : <React.Fragment />}
                     <button type="button" class="btn btn-secondary" id="closeModal" data-dismiss="modal">
@@ -431,7 +433,7 @@ export default class Lobby extends React.Component {
                 </div>
               </div>
             </div>
-          </div>
+          </Fragment>
         ) : this.state.fatalError ? (
           <div>
             <p>{this.state.fatalError}</p>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, Fragment} from "react"
 import background from "./assets/table.jpg"
 import {BrowserRouter, Switch, Route} from "react-router-dom"
 import Lobby from "./components/Lobby"
@@ -11,8 +11,8 @@ import "../extra.css"
 import socketio from "socket.io-client"
 import axios from "axios"
 
-let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
-//let defaultURL = "http://localhost:8000"
+//let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
+let defaultURL = "http://localhost:8000"
 axios.defaults.baseURL = defaultURL
 const Router = () => {
   const [socket, setSocket] = useState(null)
@@ -29,7 +29,7 @@ const Router = () => {
     })
   }, [])
   return (
-    <div>
+    <Fragment>
       {socket ? (
         <BrowserRouter>
           <Switch>
@@ -48,7 +48,7 @@ const Router = () => {
         </div>
       )}
       <div id="phaser"></div>
-    </div>
+    </Fragment>
   )
 }
 
