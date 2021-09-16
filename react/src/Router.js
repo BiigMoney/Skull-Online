@@ -12,8 +12,8 @@ import socketio from "socket.io-client"
 import axios from "axios"
 import LoadingSkull from "./components/LoadingSkull"
 
-//let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
-let defaultURL = "http://localhost:8000"
+let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
+//let defaultURL = "http://localhost:8000"
 axios.defaults.baseURL = defaultURL
 const Router = () => {
   const [socket, setSocket] = useState(null)

@@ -286,8 +286,12 @@ export default class Lobby extends React.Component {
               <div className="col" />
             </div>
             {this.state.scene === 0 ? (
-              <div style={{backgroundColor: "#00000060", position: "absolute", top: "50vh", left: "50vw", marginTop: "-20vh", marginLeft: "-30vw", width: "60vw", height: "40vh", border: "3px solid #000", display: "block"}}>
-                <h4 style={{marginTop: 20}}>Welcome {this.state.name}</h4>
+            <div class="container d-flex justify-content-center" style={{height: "80%", flexGrow: 1}}>
+                    <div class="my-auto d-flex justify-content-center align-items-center" style={{backgroundColor: "#00000060", width: "70%", height: "50%", border: "3px solid #000", minHeight: 300, minWidth: 700, position: "relative"}}>
+
+<div style={{display: "block"}}>
+
+                <h4>Welcome {this.state.name}</h4>
                 <h4>There are currently {this.state.players} people playing.</h4>
                 <br />
                 <h4>Skull is a 2-6 player game.</h4>
@@ -299,9 +303,12 @@ export default class Lobby extends React.Component {
                     here!
                   </a>
                 </h4>
+  </div>
+</div>
               </div>
             ) : this.state.scene === 1 ? (
-              <div style={{backgroundColor: "#00000060", position: "absolute", top: "50%", left: "50%", marginTop: "-110px", marginLeft: "-250px", width: 500, height: 220, border: "3px solid #000"}}>
+                  <div class="container d-flex justify-content-center" style={{height: "80%", flexGrow: 1}}>
+                    <div class="my-auto" style={{backgroundColor: "#00000060", width: "60vw", height: "60vh", border: "3px solid #000", width: 500, height: 220, position: "relative"}}>
                 <form style={{marginTop: 35}} onSubmit={this.submitLobby}>
                   <div style={{display: "block"}}>
                     <h5 style={{display: "inline-block", textAlign: "right", marginRight: 10}}>Lobby Name:</h5>
@@ -323,6 +330,7 @@ export default class Lobby extends React.Component {
                     Create Lobby
                   </button>
                 </form>
+              </div>
               </div>
             ) : (
               <Fragment>
