@@ -12,6 +12,16 @@ class playGame extends Phaser.Scene {
   }
 
   preload() {
+    var progressBar = this.add.graphics();
+    var progressBox = this.add.graphics();
+    progressBox.fillStyle(0x222222, 0.8);
+    progressBox.fillRect(700 - 160, 787/2, 320, 50);
+    this.load.on('progress', function (value) {
+      console.log(value);
+      progressBar.clear();
+      progressBar.fillStyle(0xffffff, 1);
+      progressBar.fillRect(710 - 160, 10 + 787/2, 300 * value, 30);
+    });
     this.load.image("chat", require("../assets/chat.png").default)
     this.load.image("blueBase", require("../assets/Blue/Base.png").default)
     this.load.image("blueBaseW", require("../assets/Blue/BaseW.png").default)
@@ -487,6 +497,7 @@ class playGame extends Phaser.Scene {
       console.error("Received player leave but player was not found in the lobby.")
       return
     }
+    this.addUnread()
     this.wall.append(this.createMessage("-- ", `${this.players[idx].name} has left the game. : --`, "#888888"))
     let color = info.colors[idx]
     this.playerText[idx].setText("")

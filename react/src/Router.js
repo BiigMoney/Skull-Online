@@ -10,6 +10,7 @@ import "../bootstrap.css"
 import "../extra.css"
 import socketio from "socket.io-client"
 import axios from "axios"
+import LoadingSkull from "./components/LoadingSkull"
 
 //let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
 let defaultURL = "http://localhost:8000"
@@ -44,7 +45,7 @@ const Router = () => {
         </div>
       ) : (
         <div style={{backgroundImage: `url(${background})`, textAlign: "center", width: "100%", height: "100%", position: "absolute", top: 0, left: 0, fontSize: 40, textAlign: "center"}}>
-          <p style={{marginTop: 50}}>Loading...</p>
+          <LoadingSkull/>
         </div>
       )}
       <div id="phaser"></div>

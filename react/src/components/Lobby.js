@@ -3,6 +3,7 @@ import axios from "axios"
 import $ from "jquery"
 import background from "../assets/table.jpg"
 import "../../extra.css"
+import LoadingSkull from "./LoadingSkull"
 
 export default class Lobby extends React.Component {
   state = {
@@ -159,7 +160,8 @@ export default class Lobby extends React.Component {
     })
   }
 
-  joinLobbyPassword = () => {
+  joinLobbyPassword = (e) => {
+    if(e) e.preventDefault()
     this.refreshErrors()
     let room = this.state.lobbies.find(room => room.roomid === this.state.lobbyID)
     let password = document.getElementById("passwordInput").value
@@ -416,11 +418,11 @@ export default class Lobby extends React.Component {
                       Password
                     </h5>
                   </div>
-                  <form onSubmit={this.joinLobbyPassword}>
                     <div class="modal-body">
+                  <form onSubmit={this.joinLobbyPassword}>
                       <input type="text" autoComplete="off" className="form-control" id="passwordInput" />
-                    </div>
                   </form>
+                    </div>
                   <div class="modal-footer">
                     {this.state.joinPasswordError ? <p style={{color: "red"}}>{this.state.joinPasswordError}</p> : <React.Fragment />}
                     <button type="button" class="btn btn-secondary" id="closeModal" data-dismiss="modal">
@@ -439,9 +441,7 @@ export default class Lobby extends React.Component {
             <p>{this.state.fatalError}</p>
           </div>
         ) : (
-          <div>
-            <p>Loading...</p>
-          </div>
+         <LoadingSkull/> 
         )}
       </div>
     )
