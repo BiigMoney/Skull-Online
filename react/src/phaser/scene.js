@@ -1,8 +1,8 @@
 import Phaser from "phaser"
-import Card from "../helpers/card"
+import Card from "./helpers/card"
 import info from "./info.json"
-import Base from "../helpers/base"
-import Button from "../helpers/button"
+import Base from "./helpers/base"
+import Button from "./helpers/button"
 
 class playGame extends Phaser.Scene {
   constructor() {
@@ -12,17 +12,16 @@ class playGame extends Phaser.Scene {
   }
 
   preload() {
-    var progressBar = this.add.graphics();
-    var progressBox = this.add.graphics();
-    progressBox.fillStyle(0x222222, 0.8);
-    progressBox.fillRect(700 - 160, 787/2, 320, 50);
-    this.load.on('progress', function (value) {
-      console.log(value);
-      progressBar.clear();
-      progressBar.fillStyle(0xffffff, 1);
-      progressBar.fillRect(710 - 160, 10 + 787/2, 300 * value, 30);
-    });
-    this.load.image("chat", require("../assets/chat.png").default)
+    var progressBar = this.add.graphics()
+    var progressBox = this.add.graphics()
+    progressBox.fillStyle(0x222222, 0.8)
+    progressBox.fillRect(700 - 160, 787 / 2, 320, 50)
+    this.load.on("progress", value => {
+      progressBar.clear()
+      progressBar.fillStyle(0xffffff, 1)
+      progressBar.fillRect(710 - 160, 10 + 787 / 2, 300 * value, 30)
+    })
+
     this.load.image("blueBase", require("../assets/Blue/Base.png").default)
     this.load.image("blueBaseW", require("../assets/Blue/BaseW.png").default)
     this.load.image("blueDisc", require("../assets/Blue/Disc.png").default)
@@ -58,7 +57,7 @@ class playGame extends Phaser.Scene {
     this.load.image("yellowDisc", require("../assets/Yellow/Disc.png").default)
     this.load.image("yellowFlower", require("../assets/Yellow/Flower.png").default)
     this.load.image("yellowSkull", require("../assets/Yellow/Skull.png").default)
-
+    this.load.image("chat", require("../assets/chat2.ico").default)
     this.load.image("backdrop", require("../assets/962592.jpg").default)
   }
 
@@ -92,8 +91,8 @@ class playGame extends Phaser.Scene {
     }
   }
 
-  setBasesInteractive = (bases, value) => {
-    bases.forEach(base => {
+  setBasesInteractive = value => {
+    this.bases.forEach(base => {
       value ? base.setInteractive() : base.disableInteractive()
     })
   }
@@ -192,7 +191,7 @@ class playGame extends Phaser.Scene {
       this.color = color
       this.zone = this.add.zone(info.base.x[x], info.base.y[y], 0, 0).setCircleDropZone(info.base.r)
       this.zone.disableInteractive()
-      this.setBasesInteractive(this.bases, false)
+      this.setBasesInteractive(false)
       this.text.setText("You are playing as " + color)
     }
     if (this.getNumberOfPlayers(this.players) >= 2 && this.me.host && this.me.isPlaying) {
@@ -203,7 +202,7 @@ class playGame extends Phaser.Scene {
   getNumberOfPlayers = players => {
     let count = 0
     players.forEach(player => {
-      player ? count++ : null
+      if (player) count++
     })
     return count
   }
@@ -225,7 +224,7 @@ class playGame extends Phaser.Scene {
     this.outline.clear()
     this.outline.lineStyle(8, info.heXColors[num]).strokeRect(info.base.x[x] - 149 / 2, info.base.y[y] - 148 / 2, 149, 148)
     this.turn = color
-    if (this.turn == this.color) {
+    if (this.turn === this.color) {
       if (this.faceDownCards.filter(a => a.obj.color === this.color).length > 0) {
         this.biddingOBJs.forEach(obj => {
           obj.display()
@@ -250,7 +249,7 @@ class playGame extends Phaser.Scene {
         obj.hide()
       })
       this.foldText.hide()
-      this.zone ? this.zone.disableInteractive() : null
+      if (this.zone) this.zone.disableInteractive()
     }
   }
 
@@ -262,7 +261,7 @@ class playGame extends Phaser.Scene {
     this.bases[num].x = info.base.fold.x[x]
     this.bases[num].y = info.base.fold.y[y]
     this.faceDownCards.forEach(card => {
-      if (card.obj.color == color) {
+      if (card.obj.color === color) {
         card.x = info.base.fold.x[x]
         card.y = info.base.fold.y[y]
       }
@@ -275,7 +274,7 @@ class playGame extends Phaser.Scene {
 
   onlyLeft = current => {
     for (var i = 0; i < 6; i++) {
-      if (!(i == current)) {
+      if (i !== current) {
         if (this.players[i]) {
           if (!this.players[i].hasLost) {
             return false
@@ -297,7 +296,7 @@ class playGame extends Phaser.Scene {
         this.turn = null
         break
       }
-      currentNum == 5 ? (currentNum = 0) : (currentNum += 1)
+      currentNum === 5 ? (currentNum = 0) : (currentNum += 1)
       if (this.players[currentNum]) {
         if (this.players[currentNum].hasLost) {
           continue
@@ -322,7 +321,7 @@ class playGame extends Phaser.Scene {
 
   setToRemove = card => {
     for (let i = 0; i < 4; i++) {
-      if (!this.cards[i].isDisabled && this.cards[i].obj.type == card.obj.type) {
+      if (!this.cards[i].isDisabled && this.cards[i].obj.type === card.obj.type) {
         this.cards[i].isDisabled = true
         this.cards[i].visible = false
         this.cards[i].disableInteractive()
@@ -382,7 +381,7 @@ class playGame extends Phaser.Scene {
     disk.disableInteractive()
     this.children.bringToTop(disk)
     this.flipped++
-    if (disk.obj.flipped && disk.obj.type == "Skull") {
+    if (disk.obj.flipped && disk.obj.type === "Skull") {
       this.faceDownCards.forEach(card => card.disableInteractive())
       if (this.turn === this.color) {
         if (this.getNumberOfDisks() === 1) {
@@ -398,7 +397,7 @@ class playGame extends Phaser.Scene {
         this.text.setText(this.players[info.colors.indexOf(this.turn)].name + " is choosing a card to get rid of.").visible = true
       }
     } else {
-      if (this.flipped == this.highestBid) {
+      if (this.flipped === this.highestBid) {
         if (!this.bases[info.colors.indexOf(this.turn)].obj.flipped) {
           this.bases[info.colors.indexOf(this.turn)].obj.flip()
           this.resetCards()
@@ -423,7 +422,7 @@ class playGame extends Phaser.Scene {
       this.playerText[i].visible = true
     }
     this.text.visible = false
-    this.startGameText ? this.startGameText.hide() : null
+    if (this.startGameText) this.startGameText.hide()
     if (this.color) {
       this.createCards(this.color)
       this.resetCards(this.color)
@@ -462,11 +461,7 @@ class playGame extends Phaser.Scene {
     this.text.setText("Current bid is " + bid + " by " + color).visible = true
     if (!this.bidding) {
       this.bidding = true
-      this.cards
-        ? this.cards.forEach(card => {
-            card.disableInteractive()
-          })
-        : null
+      if (this.cards) this.cards.forEach(card => card.disableInteractive())
     }
     if (this.faceDownCards.length === this.highestBid) {
       for (let i = 0; i < this.players.length; i++) {
@@ -566,9 +561,9 @@ class playGame extends Phaser.Scene {
         let xy = x + 3 * y
         this.bases[xy].x = info.base.x[x]
         this.bases[xy].y = info.base.y[y]
-        this.bases[xy].obj.flipped ? this.bases[xy].obj.flip() : null
+        if (this.bases[xy].obj.flipped) this.bases[xy].obj.flip()
         this.color ? (this.bases[xy].disableInteractive().visible = true) : (this.bases[xy].setInteractive().visible = true)
-        this.players[xy] ? (this.playerText[xy].setColor(info.hexColors[xy]).setText(this.players[xy].name).y += y === 0 ? 75 : -75) : null
+        if (this.players[xy]) this.playerText[xy].setColor(info.hexColors[xy]).setText(this.players[xy].name).y += y === 0 ? 75 : -75
       }
     }
     this.cards.forEach(card => card.destroy())
@@ -656,17 +651,16 @@ class playGame extends Phaser.Scene {
 
     this.leaveGame = new Button(this).render(1275, 725, 150, 50, "Leave", function () {
       this.scene.socket.emit("leavegame", this.scene.me)
-      this.scene.leaveGame(this.scene.me)
     })
 
     this.bidUp = new Button(this).render(1300, 400, 20, 20, "+", function () {
-      this.scene.faceDownCards.length > this.scene.currentBid ? this.scene.bidNum.text.setText(++this.scene.currentBid) : null
+      if (this.scene.faceDownCards.length > this.scene.currentBid) this.scene.bidNum.text.setText(++this.scene.currentBid)
     })
     this.bidUp.hide()
     this.bidNum = new Button(this).render(1250, 400, 40, 40, "1", () => {})
     this.bidNum.hide()
     this.bidDown = new Button(this).render(1200, 400, 20, 20, "-", function () {
-      this.scene.currentBid > 1 && this.scene.currentBid > this.scene.highestBid + 1 ? this.scene.bidNum.text.setText(--this.scene.currentBid) : null
+      if (this.scene.currentBid > 1 && this.scene.currentBid > this.scene.highestBid + 1) this.scene.bidNum.text.setText(--this.scene.currentBid)
     })
     this.bidDown.hide()
     this.bidSubmit = new Button(this).render(1250, 450, 100, 40, "Submit", function () {
@@ -700,9 +694,24 @@ class playGame extends Phaser.Scene {
 
     this.bases = []
     this.faceDownCards = []
-    //set on game create
-    this.createBases(this.bases)
-    this.setBasesInteractive(this.bases, true)
+
+    for (let y = 0; y < 2; y++) {
+      for (let x = 0; x < 3; x++) {
+        let xy = x + 3 * y
+        this.bases[xy] = new Base(this)
+          .render(info.base.x[x], info.base.y[y], info.colors[xy] + "Base")
+          .setName(info.colors[xy])
+          .on(
+            "pointerdown",
+            function () {
+              this.scene.socket.emit("selectbase", this.scene.me, this.name)
+              this.scene.selectBase(this.scene.me, this.name)
+            },
+            this.bases[xy]
+          )
+      }
+    }
+    this.setBasesInteractive(true)
     this.text = this.add.text(this.game.config.width / 2, this.game.config.height / 2, "Select a color by clicking on a mat.").setOrigin(0.5)
 
     this.input.on("drag", function (pointer, gameObject, x, y) {
@@ -755,7 +764,7 @@ class playGame extends Phaser.Scene {
     this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
     this.enterKey.on("down", e => {
       let chat = document.getElementById("chat")
-      if (chat.value.trim() != "") {
+      if (chat.value.trim() !== "") {
         let message = this.createMessage(this.me.name, chat.value, this.color ? this.color : "white")
         this.wall.append(message)
         this.socket.emit("message", this.me.name, chat.value, this.color ? this.color : "white")

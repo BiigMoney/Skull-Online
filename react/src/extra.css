@@ -39,7 +39,27 @@ th {
   }
 }
 
-html,
-body {
-  height: 100%;
+.background {
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+  background-image: url("./assets/table.jpg");
+}
+
+.top-button {
+  width: 100%;
+  max-width: 150px;
+  bottom: 0px;
+  position: absolute;
+  left: 50%;
+  margin-left: -75px;
+}
+
+.middle-block {
+  height: 80%;
+  flex-grow: 1;
 }

@@ -41,7 +41,6 @@ const getGame = room => games.find(game => game.roomid === room)
 
 const addUserToGame = user => {
   const game = getGame(user.room)
-  console.log("game here", game)
   game.players.push(user)
   return game
 }
