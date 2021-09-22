@@ -13,8 +13,8 @@ import axios from "axios"
 import {connect} from "react-redux"
 import {loadData} from "./redux/actions"
 
-//let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
-let defaultURL = "http://localhost:8000"
+let defaultURL = "https://rocky-savannah-29000.herokuapp.com"
+//let defaultURL = "http://localhost:8000"
 axios.defaults.baseURL = defaultURL
 const Router = props => {
   const {loadData} = props
