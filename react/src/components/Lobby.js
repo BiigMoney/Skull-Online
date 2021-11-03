@@ -293,7 +293,7 @@ class Lobby extends Component {
                       localStorage.removeItem("name")
                     }}
                   >
-                    not you? click here to change name
+                    not you? click here to change your name
                   </button>
                 </p>
                 <h4>
