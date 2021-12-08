@@ -1,0 +1,65 @@
+.tableSelect > th {
+  background-color: black !important;
+  color: white;
+}
+
+th {
+  background-color: #303030;
+}
+
+.navbar {
+  background: none;
+  background-color: transparent;
+}
+
+.table-fixed tbody {
+  height: 35vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.table-fixed thead,
+.table-fixed tbody,
+.table-fixed tr,
+.table-fixed td,
+.table-fixed th {
+  display: block;
+}
+
+.table-fixed tbody td,
+.table-fixed tbody th,
+.table-fixed thead > tr > th {
+  float: left;
+  position: relative;
+
+  &::after {
+    content: "";
+    clear: both;
+    display: block;
+  }
+}
+
+.background {
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+  background-image: url("./assets/table.jpg");
+}
+
+.top-button {
+  width: 100%;
+  max-width: 150px;
+  bottom: 0px;
+  position: absolute;
+  left: 50%;
+  margin-left: -75px;
+}
+
+.middle-block {
+  height: 80%;
+  flex-grow: 1;
+}

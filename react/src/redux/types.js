@@ -1,0 +1,7 @@
+export const SETERROR = "SETERROR"
+export const SETSOCKET = "SETSOCKET"
+export const SETLOADING = "SETLOADING"
+export const SETLOBBYINFO = "SETLOBBYINFO"
+export const SETNAME = "SETNAME"
+export const SETLOBBYERROR = "SETLOBBYERROR"
+export const SETLOBBYLOADING = "SETLOBBYLOADING"

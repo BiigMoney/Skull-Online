@@ -1,49 +1,27 @@
-import axios from "axios";
-import React from "react";
-import socketio from 'socket.io-client'
+import React from "react"
+import LoadingSkull from "./LoadingSkull"
 import Skull from "./Skull"
 
 export default class Game extends React.Component {
+  state = {
+    loading: true,
+    isAuthed: false,
+    player: null
+  }
 
-    state = {
-        isAuthed: false,
-        player: null,
-        socket: null,
+  componentDidMount() {
+    const {state} = this.props.location
+    if (state && state.isAuthed) {
+      this.setState({isAuthed: true, player: state.player, loading: false})
+      this.props.history.replace({
+        state: {}
+      })
+      return
     }
-
-    sendChat = (e) =>{
-        e.preventDefault()
-        this.setState(prevState => ({
-            messages: [...prevState.messages, document.getElementById('chat').value]
-        }))
-    }
-
-    componentDidMount(){
-
-        const { state } = this.props.location;
-        if (state && state.isAuthed) {
-            this.setState({isAuthed: true, player: state.player})
-            this.props.history.replace({
-                state: {}
-            })
-            return
-        }
-
-        this.props.history.push("/lobby")
-
-    }
-	render() {
-		return (
-			<div style={{ textAlign: "center" }}>
-			{this.state.isAuthed ? (
-                <div>
-                    <h1>Skull Online :logo:</h1>
-                    <div style={{display: "inline"}}>
-                    <Skull player={this.state.player} socket={this.props.socket}/>
-                    </div>
-                </div>
-                ) : <h1>User is not authed</h1>}
-			</div>
-		);
-	}
+    this.setState({loading: false})
+    this.props.history.replace("/lobby")
+  }
+  render() {
+    return <div style={{textAlign: "center"}}>{this.state.isAuthed ? <Skull player={this.state.player} history={this.props.history} /> : this.state.loading ? <LoadingSkull /> : <h1>User is not authed</h1>}</div>
+  }
 }
