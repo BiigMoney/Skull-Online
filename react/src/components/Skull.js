@@ -1,5 +1,5 @@
 import {Fragment, Component} from "react"
-import {Scale, AUTO, Game} from "phaser"
+import Phaser from "phaser"
 import playGame from "../phaser/scene"
 import {connect} from "react-redux"
 import {setLobbyError, reloadData} from "../redux/actions"
@@ -17,20 +17,20 @@ class Skull extends Component {
 
   componentDidMount = () => {
     const config = {
-      type: AUTO,
+      type: Phaser.AUTO,
       dom: {
         createContainer: true
       },
       scale: {
-        autoCenter: Scale.CENTER_BOTH,
-        mode: Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        mode: Phaser.Scale.FIT,
         parent: "phaser-example",
         width: 1400,
         height: 787
       },
-      scene: playGame
+      scene: new playGame()
     }
-    const game = new Game(config)
+    const game = new Phaser.Game(config)
     this.setState({
       game: game,
       socket: this.props.store.socket
@@ -44,13 +44,13 @@ class Skull extends Component {
     })
     this.props.store.socket.on("leave", this.leaveGame)
     const player = this.props.player
-    let bruno = {
+    let cfg = {
       room: player.room,
       socket: this.props.store.socket,
       host: player.host,
       name: player.name
     }
-    game.scene.start("game", bruno)
+    game.scene.start("game", cfg)
   }
 
   componentWillUnmount() {

@@ -183,7 +183,12 @@ class playGame extends Phaser.Scene {
     let y = Math.floor(num / 3)
     this.bases[num].visible = false
     this.bases[num].disableInteractive()
-    this.playerText[x + 3 * y].setText(user.name).setColor(info.hexColors[x + 3 * y]).visible = true
+    this.playerText[x + 3 * y].setText(user.name)
+
+    this.playerText[x + 3 * y].setColor(info.hexColors[x + 3 * y])
+
+    this.playerText[x + 3 * y].visible = true
+
     if (user.id === this.me.id) {
       this.me.isPlaying = true
       this.me.isFolded = false
@@ -275,11 +280,8 @@ class playGame extends Phaser.Scene {
   onlyLeft = current => {
     for (var i = 0; i < 6; i++) {
       if (i !== current) {
-        if (this.players[i]) {
-          if (!this.players[i].hasLost) {
-            return false
-          } else {
-          }
+        if (this.players[i]?.isPlaying && !this.players[i].hasLost) {
+          return false
         }
       }
     }
@@ -292,12 +294,15 @@ class playGame extends Phaser.Scene {
     while (true) {
       counter++
       if (counter > 10) {
-        this.add.text(700, 400, "Game over")
+        this.text.setText("Game over").visible = true
         this.turn = null
+        if (this.color === info.colors[currentNum]) {
+          this.resetButton.display()
+        }
         break
       }
       currentNum === 5 ? (currentNum = 0) : (currentNum += 1)
-      if (this.players[currentNum]) {
+      if (this.players[currentNum]?.isPlaying) {
         if (this.players[currentNum].hasLost) {
           continue
         }
@@ -391,6 +396,7 @@ class playGame extends Phaser.Scene {
           this.socket.emit("playerlost", this.color, this.me.room)
           this.playerLost(this.color)
         } else {
+          this.text.setText("")
           this.pickDisks()
         }
       } else {
@@ -415,11 +421,13 @@ class playGame extends Phaser.Scene {
 
   startGame = first => {
     this.bases.forEach(base => {
-      base.visible ? (base.visible = false) : (base.visible = true)
+      base.visible = !base.visible
     })
     for (let i = 0; i < 6; i++) {
-      this.playerText[i].setColor("0x000000").setText("4").y += i < 3 ? -85 : 85
-      this.playerText[i].visible = true
+      if (this.players[i]?.isPlaying) {
+        this.playerText[i].setColor("0x000000").setText("4").y += i < 3 ? -85 : 85
+        this.playerText[i].visible = true
+      }
     }
     this.text.visible = false
     if (this.startGameText) this.startGameText.hide()
@@ -468,7 +476,7 @@ class playGame extends Phaser.Scene {
         if (i === info.colors.indexOf(color)) {
           continue
         }
-        if (this.players[i]) {
+        if (this.players[i]?.isPlaying) {
           this.fold(info.colors[i])
         }
       }
@@ -505,7 +513,7 @@ class playGame extends Phaser.Scene {
           this.biddingOBJs.forEach(obj => obj.hide())
           this.foldText.hide()
           this.outline.clear()
-          this.text.setText(`${info.colors[i]} wins!`).visible = true
+          this.text.setText(`${this.players[i].name} wins!`).visible = true
           if (this.color === info.colors[i]) {
             this.resetButton.display()
           }
@@ -517,7 +525,10 @@ class playGame extends Phaser.Scene {
         this.setNextTurn(color)
       }
     } else {
-      this.bases[idx].setInteractive().visible = true
+      this.bases[idx].visible = true
+      if (!this.me.isPlaying) {
+        this.bases[idx].setInteractive()
+      }
       if (this.getNumberOfPlayers(this.players) === 1) {
         this.startGameText.hide()
       }
@@ -525,7 +536,19 @@ class playGame extends Phaser.Scene {
   }
 
   setUpSocket = socket => {
-    let self = this
+    socket.off("userjoined")
+    socket.off("message")
+    socket.off("userplaying")
+    socket.off("initgame")
+    socket.off("startgame")
+    socket.off("resetgame")
+    socket.off("playcard")
+    socket.off("fold")
+    socket.off("bid")
+    socket.off("flipcard")
+    socket.off("chooseremove")
+    socket.off("playerlost")
+    socket.off("leavegame")
     socket.on("userjoined", user => {
       //add player to lobby ?
       this.addUnread()
@@ -535,23 +558,22 @@ class playGame extends Phaser.Scene {
       this.addUnread()
       this.wall.append(this.createMessage(name, message, color))
     })
-    socket.on("userplaying", self.selectBase)
+    socket.on("userplaying", this.selectBase)
     socket.on("initgame", (game, user) => {
       //set up players, makes objects visible, loop through events
-      self.me = user
       game.events.forEach(event => {
-        self.functionMap[event.name](...event.args)
+        this.functionMap[event.name](...event.args)
       })
     })
-    socket.on("startgame", self.startGame)
-    socket.on("resetgame", self.resetGame)
-    socket.on("playcard", self.playCard)
-    socket.on("fold", self.fold)
-    socket.on("bid", self.bid)
-    socket.on("flipcard", self.selectDownDisk)
-    socket.on("chooseremove", self.chooseRemove)
-    socket.on("playerlost", self.playerLost)
-    socket.on("leavegame", self.playerLeave)
+    socket.on("startgame", this.startGame)
+    socket.on("resetgame", this.resetGame)
+    socket.on("playcard", this.playCard)
+    socket.on("fold", this.fold)
+    socket.on("bid", this.bid)
+    socket.on("flipcard", this.selectDownDisk)
+    socket.on("chooseremove", this.chooseRemove)
+    socket.on("playerlost", this.playerLost)
+    socket.on("leavegame", this.playerLeave)
   }
 
   resetGame = () => {
@@ -563,7 +585,7 @@ class playGame extends Phaser.Scene {
         this.bases[xy].y = info.base.y[y]
         if (this.bases[xy].obj.flipped) this.bases[xy].obj.flip()
         this.color ? (this.bases[xy].disableInteractive().visible = true) : (this.bases[xy].setInteractive().visible = true)
-        if (this.players[xy]) this.playerText[xy].setColor(info.hexColors[xy]).setText(this.players[xy].name).y += y === 0 ? 75 : -75
+        if (this.players[xy]?.isPlaying) this.playerText[xy].setColor(info.hexColors[xy]).setText(this.players[xy].name).y += y === 0 ? 85 : -85
       }
     }
     this.cards.forEach(card => card.destroy())
@@ -630,6 +652,7 @@ class playGame extends Phaser.Scene {
   }
 
   create(data) {
+    this.me = {...data, id: data.socket.id, socket: null}
     this.unreadMessages = 0
     this.socket = data.socket
     this.setUpSocket(this.socket)
@@ -713,6 +736,7 @@ class playGame extends Phaser.Scene {
     }
     this.setBasesInteractive(true)
     this.text = this.add.text(this.game.config.width / 2, this.game.config.height / 2, "Select a color by clicking on a mat.").setOrigin(0.5)
+    this.text.depth = 10000
 
     this.input.on("drag", function (pointer, gameObject, x, y) {
       gameObject.x = x
