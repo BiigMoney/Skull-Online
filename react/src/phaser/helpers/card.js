@@ -5,7 +5,7 @@ export default class Card {
     this.type = type
     this.render = () => {
       var scale = this.flipped ? 0.5 : 0.25
-      var sprite = this.color + this.flipped ? this.type : "Disc"
+      var sprite = `${this.color}${this.flipped ? this.type : "Disc"}`
       let card = scene.add.image(0, 0, sprite).setScale(scale, scale)
       this.card = card
       card.obj = this
